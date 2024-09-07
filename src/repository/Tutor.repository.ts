@@ -1,11 +1,12 @@
-import TutorModel, {ITutor,ITempTutor,TempTutor} from "../models/tutorModel";
+import TutorModel, {ITutor,ITempTutor,TempTutor} from "../models/Tutor.model";
+import { ITutorRepository } from "../interfaces/ITutor.repository";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 
 
-class tutorRepository {
+class tutorRepository implements ITutorRepository{
     
     async findByEmail (email: string): Promise<ITutor | null>{
         try {
@@ -52,6 +53,33 @@ class tutorRepository {
             return null;
         }
     }
+
+    async blockUnblock(tutorId:string):Promise<{ success: boolean; message?: string }>  {
+        try{
+            const user = await TutorModel.findById(tutorId)
+            if(!user){
+                return {success:false, message: "User not found."}
+            }
+            await user.toggleBlockStatus();
+        
+            return {success: true, message: `User ${user.isblocked? 'blocked': "Unblocked"} successfully`};
+        }catch (error) {
+            console.error('Error toggling user block status:', error);
+            return { success: false, message: 'An error occurred' };
+        }
+    }
+
+    async getAllTutors() {
+        try{
+            const tutors = await TutorModel.find();
+            return  tutors;
+        }catch(err){
+            console.error("error getting users: " , err);
+            return null
+        }
+    }
+
+
 
 };
 

@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import jwt ,{ Secret }from "jsonwebtoken";
-import { ITutor } from "../models/tutorModel";
+import { ITutor } from "../models/Tutor.model";
 
 dotenv.config()
 
@@ -11,19 +11,21 @@ if(!JWT_SECRET || !REFRESH_TOKEN_SECRET){
     throw new Error("JWT_SECRET or REFRESH_TOKEN_SECRET is not defined in environmental variables. ")
 }
 
-const createToken = (tutor:ITutor) : {accessToken:string,refreshToken:string} =>{
+const createToken = (tutor:ITutor,role:string) : {accessToken:string,refreshToken:string} =>{
 
     const accessToken = jwt.sign(
         {
             id : tutor._id,
+            role:role,
             email: tutor.email,  
         },JWT_SECRET as Secret,
-        { expiresIn: '15m' }
+        { expiresIn: '5m' }
     )
     
     const refreshToken = jwt.sign(
         {
             id: tutor._id,
+            role:role,
             email: tutor.email,
         },
         REFRESH_TOKEN_SECRET as Secret,

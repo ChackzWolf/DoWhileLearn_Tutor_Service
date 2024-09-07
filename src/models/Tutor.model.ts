@@ -4,13 +4,18 @@ import jwt from "jsonwebtoken";
 
 
 export interface ITutor extends Document {
+    _id:string
     firstName:string;
     lastName:string;
     email: string;
     password: string;
+    isblocked: boolean;
     comparePassword: (password: string) => Promise<boolean>;
     SignAccessToken: () => string;
     SignRefreshToken: () => string;
+    block(): Promise<void>;
+    unblock(): Promise<void>;
+    toggleBlockStatus(): Promise<void>;
 }
 
 export interface ITempTutor extends Document {
@@ -36,9 +41,13 @@ const TutorSchema: Schema <ITutor> = new Schema({
     password: {
         type: String,
         required: true
+    },
+    isblocked: {
+        type: Boolean,
+        default: false,
     }
 })
-
+ 
 const TempTutorShcema: Schema <ITempTutor> = new Schema({
     tutorData: {
         type: Object,
@@ -58,6 +67,24 @@ const TempTutorShcema: Schema <ITempTutor> = new Schema({
 {
     timestamps: true,
 })
+
+
+
+TutorSchema.methods.toggleBlockStatus = async function (): Promise<void> {
+    this.isblocked = !this.isblocked; // Toggle the blocked status
+    await this.save(); // Save the updated document
+};
+
+TutorSchema.methods.unblock = async function (): Promise<void> {
+    this.isblocked = false;
+    await this.save();
+};
+
+TutorSchema.methods.block = async function (): Promise<void> {
+    this.isblocked = true;
+    await this.save();
+};
+
 
 // Hash password
 TutorSchema.pre<ITutor>("save", async function (next) {

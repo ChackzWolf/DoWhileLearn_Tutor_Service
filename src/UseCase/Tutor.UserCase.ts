@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 import { generateOTP } from "../utils/Generate.OTP";
 import { SendVerificationMail } from "../utils/Send.email";
 import createToken from "../utils/Activation.token";
-import { ITutorService } from "../interfaces/ITutorService";
+import { ITutorUseCase } from "../interfaces/ITutor.Use.case";
 dotenv.config();
 
 interface Tutor{
@@ -27,7 +27,7 @@ const repository = new tutorRepository()
 interface promiseReturn { success: boolean, message: string, tempId?: string, email?: string }
  
 
-export class TutorService implements ITutorService{
+export class TutorService implements ITutorUseCase{
     
     async tutorRegister(tutorData: Tutor): Promise <promiseReturn> {
         try{
@@ -41,7 +41,7 @@ export class TutorService implements ITutorService{
             if(emailExists){
                 console.log('email exists triggered')
                 return {success: false, message: "Email already exists" };
-            }
+            } 
 
             let otp = generateOTP();
             console.log(`OTP : [ ${otp} ]`);
@@ -66,9 +66,11 @@ export class TutorService implements ITutorService{
             throw new Error(`Failed to signup: ${err}`);
         } 
     }
+    
 
-    async VerifyOtp(passedData: VerifyOtpData): Promise<{success:boolean, message:string, token?:string, refreshToken? :string}>{
+    async VerifyOtp(passedData: VerifyOtpData): Promise<{success:boolean, message:string, tutorData?:ITutor, accessToken?:string, refreshToken?:string , _id?:string}>{
         try {
+            console.log('ive vannarnu', passedData);
             const tempTutor: ITempTutor | null = await TempTutor.findById(passedData.tempId);
             
             if (!tempTutor) {
@@ -78,19 +80,19 @@ export class TutorService implements ITutorService{
             if (tempTutor.otp !== passedData.enteredOTP) {
                 return { success: false, message: "Invalid OTP." };
             }
-    
+            
             const createTutor: ITutor | null = await repository.createTutor(tempTutor.tutorData);
+            const _id = createTutor?._id;
     
             if (!createTutor) {
                 throw new Error("Failed to create tutor.");
             }
     
-            const {accessToken, refreshToken} = createToken(createTutor);
-
-            console.log(refreshToken)
-            return { success: true, message: "Tutor has been registered.", token:accessToken, refreshToken };
+            console.log( createTutor, 'create tutorrr')
+            const {accessToken, refreshToken} = createToken(createTutor,'TUTOR');
+            return { success: true, message: "Tutor has been registered.", tutorData: createTutor, accessToken, refreshToken, _id };
     
-        } catch (err) {
+        } catch (err) { 
             console.error("Error in VerifyOtp:", err);
             return { success: false, message: "An error occurred while verifying OTP." };
         }
@@ -98,48 +100,81 @@ export class TutorService implements ITutorService{
 
 
 
-    async ResendOTP(passedData : VerifyOtpData):Promise<{success: boolean, msg:string}> {
+    async ResendOTP(passedData : VerifyOtpData):Promise<{success: boolean, message:string}> {
         try{
             const {email,tempId} = passedData;
             let newOTP = generateOTP();
-            console.log(`OTP : [   ${newOTP}   ]`);
+            console.log(` ressend OTP : [   ${newOTP}   ]`);
 
             const updatedTempTutor = await TempTutor.findByIdAndUpdate(tempId,{otp:newOTP},{new:true})
 
             if(!updatedTempTutor){
                 console.log('failed to send otp')
-                return { success: false, msg: "Register time has expaired. Try registering again"}
+                return { success: false, message: "Register time has expaired. Try registering again"}
             }else{
                 await SendVerificationMail(email,newOTP)
 
-                return {success: true, msg:"OTP has been resent"};
+                return {success: true, message:"OTP has been resent"}; 
             } 
         }catch{
-            return {success: false, msg: "An error occured while Resending OTP"}
+            return {success: false, message: "An error occured while Resending OTP"}
         }
     }
     
-    async tutorLogin(loginData: { email: string; password: string; }): Promise<{ success: boolean; msg: string; token?: string , refreshToken?:string }> {
+    async tutorLogin(loginData: { email: string; password: string; }): Promise<{ success: boolean; message: string; tutorData?: ITutor ,accessToken?:string, refreshToken?:string , _id?:string}> {
         try {
             const {email, password} = loginData;
             const tutorData = await repository.findByEmail(email);
             if(tutorData){
                 const checkPassword = await tutorData.comparePassword(password)
                 if(checkPassword){
-                    const {accessToken,refreshToken} = createToken(tutorData);
-                    console.log(refreshToken)
-                    
-                    return {success:true, msg: "Tutor login successful.", token :accessToken, refreshToken}
+                    console.log(tutorData,'kkkkkkkkk')
+                    const _id = tutorData._id;
+                    const {refreshToken, accessToken} = createToken(tutorData, "TUTOR")
+
+                    return {success:true, message: "Tutor login successful.", tutorData, refreshToken, accessToken, _id}
                 }else {
-                    return { success: false, msg: "Invalid password."}
-                }
+                    return { success: false, message: "Invalid password."}
+                } 
             }else{
-                return {success: false , msg: "Invalid email."}
-            }
+                return {success: false , message: "Invalid email."}
+            } 
             
         } catch (error) {
-            return { success:false, msg: "An error occured while loggin in."};
+            return { success:false, message: "An error occured while loggin in."};
         }
     }
+
+    async fetchTutors(): Promise<{ success: boolean; tutors?: ITutor[] }> {
+        try {
+            const tutors = await repository.getAllTutors();
+            console.log(tutors, 'students')
+            if (tutors) {
+                return { success: true, tutors };
+            } else {
+                return { success: false };
+            }
+        } catch (err) {
+            return { success: false };
+        }
+    }
+    
+
+    async blockUnblock(data:{tutorId:string}): Promise<{success:boolean; message?:string}> {
+        try{
+            console.log(data.tutorId,'from use case')
+            const response = await repository.blockUnblock(data.tutorId);
+            console.log(response)
+            if(!response.success){
+                return {success:false, message:"Error finding tutor."}
+            }
+            return {success: true, message: response.message}
+
+        }catch(error){
+            return { success :false, message: "an error occured."}
+        }
+    }
+
+
     
 } 
