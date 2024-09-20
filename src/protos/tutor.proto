@@ -1,10 +1,6 @@
-syntax = "proto3"
+syntax = "proto3";
 
 service TutorService {
-    rpc Register(RegisterRequest) returns(RegisterResponst);
-    rpc Login(LoginRequest) returns(LoginResponse);
-    rpc VerifyOTP (OTPRequest) returns (OTPResponse);
-    rpc ResendOTP (OTPRequest) returns (OTPResponse);
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc VerifyOTP(OTPRequest) returns (OTPResponse);
@@ -29,7 +25,6 @@ message ResponseAllTutors {
     bool success = 2;
 }
 
-
 message RegisterRequest {
     string firstName = 1;
     string lastName = 2;
@@ -45,15 +40,6 @@ message RegisterResponse {
     int32 status = 5;
 }
 
-
-message tutorData {
-    string firstName=1;
-    string lastName=2;
-    string email=3;
-    string password=4;
-}
-
-
 message OTPRequest {
     string email = 1;
     string enteredOTP = 2;
@@ -61,11 +47,6 @@ message OTPRequest {
 }
 
 message OTPResponse {
-    string msg = 1;
-    string token = 2;
-    string refreshToken = 3;
-    bool success = 4;
-    int32 status = 5;
     bool success = 1;
     tutorData tutorData = 2;
     string message = 3;
@@ -81,9 +62,19 @@ message LoginRequest {
 
 message LoginResponse {
     bool success = 1;
-    string token = 2;
-    string refreshToken = 3;
-    string msg = 4;
-    int32 status = 5;
+    tutorData tutorData = 2;
+    string message = 3;
+    int32 status = 4;
+    string accessToken = 5;
+    string refreshToken = 6;
+    string _id = 7;
+}
 
+message tutorData{
+    string firstName = 1;
+    string lastName = 2;
+    string email = 3;
+    string password = 4;
+    string _id = 5;
+    bool isblocked = 6;
 }

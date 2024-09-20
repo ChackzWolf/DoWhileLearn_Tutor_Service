@@ -1,6 +1,5 @@
-
 // TutorController.ts
-import { TutorService } from "../useCase/Tutor.UseCase";
+import { TutorService } from "../UseCase/Tutor.UserCase";
 import * as grpc from '@grpc/grpc-js';
 import { ITutorController } from "../interfaces/ITutro.controllers";
 
@@ -21,34 +20,13 @@ export class TutorController implements ITutorController {
         }
     }
 
-    async verifyOtp(call: any, callback: any) {
-        try{
+    async verifyOtp(call: grpc.ServerUnaryCall<any, any>, callback: grpc.sendUnaryData<any>): Promise<void> {
+        try {
             const data = call.request;
             const response = await tutorService.VerifyOtp(data);
             callback(null, response);
-        }catch(err){
-            console.error(err)
-        }
-    }
-
-    async resendOtp(call:any, callback:any) {
-        try{
-            const data = call.request;
-            const response = await tutorService.ResendOTP(data);
-            callback(null,response);
-        }catch(err){
-            callback(err) 
-        }
-    } 
- 
-    async tutorLogin(call:any, callback:any){
-        try{
-            const data = call.request;
-            const response = await tutorService.tutorLogin(data);
-            callback(null, response);
-        }catch(err){
-            callback(err)
-
+        } catch (err) {
+            callback(err as grpc.ServiceError);
         }
     }
 
