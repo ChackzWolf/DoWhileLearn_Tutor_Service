@@ -39,13 +39,10 @@ server.addService(tutorProto.TutorService.service, {
     Register: controller.signup,
     VerifyOTP: controller.verifyOtp,
     ResendOTP: controller.resendOtp,
-<<<<<<< HEAD
-    TutorLogin: controller.tutorLogin
-=======
+
     Login: controller.tutorLogin,
     FetchTutorData: controller.fetchTutors,
     ToggleBlock: controller.blockUnblock
->>>>>>> 223ee95 (added Iinterface files changed file names)
 })
 
 grpcServer()
