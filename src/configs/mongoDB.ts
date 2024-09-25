@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import "dotenv/config";
-  
+   
 const connectDB = async () => {
-  try { 
+  try {  
     if (!process.env.MONGODB_URL_TUTOR) {
       throw new Error("MONGO_URI is not defined in the environment variables");
     }
@@ -16,4 +16,4 @@ const connectDB = async () => {
   }
 }; 
 
-export { connectDB };  
+export { connectDB };   
