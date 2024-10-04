@@ -10,6 +10,8 @@ export interface ITutor extends Document {
     email: string;
     password: string;
     isblocked: boolean;
+    students:mongoose.Types.ObjectId[];
+    wallet: number;
     comparePassword: (password: string) => Promise<boolean>;
     SignAccessToken: () => string;
     SignRefreshToken: () => string;
@@ -45,6 +47,13 @@ const TutorSchema: Schema <ITutor> = new Schema({
     isblocked: {
         type: Boolean,
         default: false,
+    },
+    students:[{
+        type: Schema.Types.ObjectId,
+    }],
+    wallet: {
+        type: Number,
+        default:0
     }
 })
  

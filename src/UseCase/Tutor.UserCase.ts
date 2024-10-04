@@ -5,6 +5,7 @@ import { generateOTP } from "../utils/Generate.OTP";
 import { SendVerificationMail } from "../utils/Send.email";
 import createToken from "../utils/Activation.token";
 import { ITutorUseCase } from "../interfaces/ITutor.Use.case";
+import { StatusCode } from "../interfaces/enums";
 dotenv.config();
 
 interface Tutor{
@@ -66,7 +67,6 @@ export class TutorService implements ITutorUseCase{
             throw new Error(`Failed to signup: ${err}`);
         } 
     }
-    
 
     async VerifyOtp(passedData: VerifyOtpData): Promise<{success:boolean, message:string, tutorData?:ITutor, accessToken?:string, refreshToken?:string , _id?:string}>{
         try {
@@ -128,7 +128,7 @@ export class TutorService implements ITutorUseCase{
             if(tutorData){
                 const checkPassword = await tutorData.comparePassword(password)
                 if(checkPassword){
-                    console.log(tutorData,'kkkkkkkkk')
+                    console.log(tutorData,'kkkkkkkkk') 
                     const _id = tutorData._id;
                     const {refreshToken, accessToken} = createToken(tutorData, "TUTOR")
 
@@ -159,7 +159,6 @@ export class TutorService implements ITutorUseCase{
         }
     }
     
-
     async blockUnblock(data:{tutorId:string}): Promise<{success:boolean; message?:string}> {
         try{
             console.log(data.tutorId,'from use case')
@@ -175,6 +174,19 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-
-    
+    async addToSutdentList (data:{tutorId:string,userId:string, tutorShare:number}){
+        try {
+            console.log(data)
+            const response = await repository.addToSutdentList(data.userId,data.tutorId, data.tutorShare);
+            console.log(response)
+            if(response.success){
+                return {message:response.message, success: true, status: StatusCode.Created}
+            }else{
+                return {message: "error creating order", success: false, status: StatusCode.NotFound}
+            }
+        } catch (error) {
+            console.log(error)
+            return {message :"Error occured while creating order", success: false , status: StatusCode.ExpectationFailed }
+        }
+    }
 } 
