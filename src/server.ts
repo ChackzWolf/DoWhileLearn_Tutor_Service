@@ -71,7 +71,8 @@ server.addService(tutorProto.TutorService.service, {
     ResendOTP: controller.resendOtp,
     Login: controller.tutorLogin,
     FetchTutorData: controller.fetchTutors,
-    ToggleBlock: controller.blockUnblock
+    ToggleBlock: controller.blockUnblock,
+    AddStudents: controller.addStudent
 })
 
 grpcServer() 

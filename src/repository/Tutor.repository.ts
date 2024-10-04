@@ -79,7 +79,29 @@ class tutorRepository implements ITutorRepository{
         }
     }
 
-
+    async addToSutdentList(userId: string, tutorId: string, tutorShare:number):Promise<{message?:string, success:boolean}> {
+        try {
+          // First, check if the course is already in the cart
+    
+            // If courseId is not in cart, add it
+            await TutorModel.updateOne(
+              { _id: tutorId },
+              { $addToSet: { students: userId } } // Add courseId to cart array, ensuring uniqueness
+            );
+                console.log(tutorShare, 'this is tutor share')
+            const addmoney = await TutorModel.updateOne(
+                { _id: tutorId },
+                { $inc: { wallet: tutorShare } }  // Increment the wallet by the amountToAdd
+            );
+                console.log(addmoney , 'added money')
+            
+            return { message: 'Course added to Purchase List', success:true};
+          
+        } catch (error) {
+          console.error('Error toggling course in cart:', error);
+          throw new Error('Failed to update cart');
+        }
+      }
 
 };
 

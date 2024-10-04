@@ -60,7 +60,7 @@ export class TutorController implements ITutorController {
         }
     }
 
-    async fetchTutors(call: grpc.ServerUnaryCall<any, any>, callback: grpc.sendUnaryData<any>): Promise<void> {
+    async fetchTutors(_call: grpc.ServerUnaryCall<any, any>, callback: grpc.sendUnaryData<any>): Promise<void> {
         try {
             const response = await tutorService.fetchTutors();
             callback(null, response);
@@ -68,4 +68,18 @@ export class TutorController implements ITutorController {
             callback(err as grpc.ServiceError);
         }
     }
+
+    async addStudent(call:grpc.ServerUnaryCall<any, any>, callback:grpc.sendUnaryData<any>):Promise<void>{
+        try {
+            const data= call.request
+            console.log(data, ' data from  contoroller')
+            const response = await tutorService.addToSutdentList(data)
+            console.log(response,'response from controller');
+            callback(null,response)
+        } catch (err) {
+            callback(err as grpc.ServiceError);
+        }
+    }
+
+
 }
