@@ -1,4 +1,4 @@
-import { ITutor, ITempTutor } from "../models/Tutor.model";
+import { ITutor, ITempTutor } from "../../Schemas/Tutor.Schema";
 
 export interface ITutorRepository {
   findByEmail(email: string): Promise<ITutor | null>;

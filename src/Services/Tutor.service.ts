@@ -1,14 +1,15 @@
-import tutorRepository from "../repository/Tutor.repository";
-import  {ITutor, ITempTutor, TempTutor} from "../models/Tutor.model";
+import tutorRepository from "../Repositories/Tutor.repository";
+import { ITutor , ITempTutor } from "../Interfaces/Models/ITutor";
+import  {TempTutor} from "../Schemas/Tutor.Schema";
 import dotenv from "dotenv"
-import { generateOTP } from "../utils/Generate.OTP";
-import { SendVerificationMail } from "../utils/Send.email";
-import createToken from "../utils/Activation.token";
-import { ITutorUseCase } from "../interfaces/ITutor.Use.case";
-import { StatusCode } from "../interfaces/enums";
+import { generateOTP } from "../Utils/Generate.OTP";
+import { SendVerificationMail } from "../Utils/Send.email";
+import createToken from "../Utils/Activation.token";
+import { ITutorUseCase } from "../Interfaces/IServices/IService.interface";
+import { StatusCode } from "../Interfaces/Enums/Enums";
 dotenv.config();
 
-interface Tutor{
+interface CreateTutor{
     firstName:string;
     lastName: string; 
     email: string;
@@ -30,7 +31,7 @@ interface promiseReturn { success: boolean, message: string, tempId?: string, em
 
 export class TutorService implements ITutorUseCase{
     
-    async tutorRegister(tutorData: Tutor): Promise <promiseReturn> {
+    async tutorRegister(tutorData: CreateTutor): Promise <promiseReturn> {
         try{
             console.log(`tutorService ${tutorData}`)
             const email = tutorData.email;
@@ -174,7 +175,7 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async addToSutdentList (data:{tutorId:string,userId:string, tutorShare:number}){
+    async addToSutdentList (data:{tutorId:string,userId:string, tutorShare:number}):Promise<{message?:string,success:boolean, status:number}>{
         try {
             console.log(data)
             const response = await repository.addToSutdentList(data.userId,data.tutorId, data.tutorShare);
