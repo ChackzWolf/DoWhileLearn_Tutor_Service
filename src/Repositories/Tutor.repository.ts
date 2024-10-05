@@ -1,5 +1,5 @@
-import TutorModel, {ITutor,ITempTutor,TempTutor} from "../models/Tutor.model";
-import { ITutorRepository } from "../interfaces/ITutor.repository";
+import TutorModel, {ITutor,ITempTutor,TempTutor} from "../Schemas/Tutor.Schema";
+import { ITutorRepository } from "../Interfaces/IRepositories/IRepository.interface";
 import dotenv from "dotenv";
 
 dotenv.config();
