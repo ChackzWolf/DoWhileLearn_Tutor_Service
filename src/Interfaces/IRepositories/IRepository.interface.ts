@@ -1,5 +1,8 @@
-import { ITutor, ITempTutor } from "../../Schemas/Tutor.Schema";
-
+import { ITutor, ITempTutor } from "../Models/ITutor";
+import {
+        BlockUnblockTutorResponse,
+        AddToStudentListResponse,
+        } from '../DTOs/IRepository.dto'
 export interface ITutorRepository {
   findByEmail(email: string): Promise<ITutor | null>;
   
@@ -7,7 +10,9 @@ export interface ITutorRepository {
   
   createTutor(tutorData: Partial<ITutor>): Promise<ITutor | null>;
   
-  blockUnblock(tutorId: string): Promise<{ success: boolean; message?: string }>;
+  blockUnblock(tutorId: string): Promise<BlockUnblockTutorResponse>;
   
   getAllTutors(): Promise<ITutor[] | null>;
+
+  addToSutdentList(userId: string, tutorId: string, tutorShare:number):Promise<AddToStudentListResponse> 
 }

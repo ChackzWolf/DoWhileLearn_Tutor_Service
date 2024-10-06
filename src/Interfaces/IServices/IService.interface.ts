@@ -1,5 +1,4 @@
-// ITutorUseCase.ts
-import { ITutor } from "../Models/ITutor";
+
 import {
         TutorLoginRequestDTO,
         VerifyOtpRequestDTO,
@@ -15,28 +14,20 @@ import {
         ResendOtpResponseDTO,
         BlockUnblockRequestDTO
         } from '../DTOs/IService.dto'
+
 export interface ITutorUseCase {
-  tutorRegister(tutorData: CreateTutor): Promise <TutorSignupResponseDTO>;
+  tutorRegister(tutorData: TutorSignupRequestDTO): Promise <TutorSignupResponseDTO>;
 
-  VerifyOtp(passedData: {
-    enteredOTP: string;
-    email: string;
-    tempId: string;
-  }): Promise<VerifyOtpResponseDTO>;
+  VerifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO>;
 
-  ResendOTP(passedData: {
-    email: string;
-    tempId: string;
-  }): Promise<ResendOtpResponseDTO>;
+  ResendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO>;
 
-  tutorLogin(loginData: {
-    email: string;
-    password: string;
-  }): Promise<TutorLoginResponseDTO>;
+  tutorLogin(loginData: TutorLoginRequestDTO): Promise<TutorLoginResponseDTO>;
 
   fetchTutors(): Promise<FetchTutorsResponseDTO>;
 
-  blockUnblock(data: {
-    tutorId: string;
-  }): Promise<BlockUnblockResponseDTO>;///////////////////////////////////////////////////
+  blockUnblock(data: BlockUnblockRequestDTO): Promise<BlockUnblockResponseDTO>;
+
+  addToSutdentList (data: AddStudentRequestDTO):Promise<AddStudentResponseDTO>
 }
+

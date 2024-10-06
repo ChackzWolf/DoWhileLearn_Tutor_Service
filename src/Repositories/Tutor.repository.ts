@@ -1,10 +1,10 @@
-import TutorModel, {ITutor,ITempTutor,TempTutor} from "../Schemas/Tutor.Schema";
+import TutorModel, { TempTutor } from "../Schemas/Tutor.Schema";
+import { ITutor,ITempTutor } from "../Interfaces/Models/ITutor";
 import { ITutorRepository } from "../Interfaces/IRepositories/IRepository.interface";
 import dotenv from "dotenv";
+import { AddToStudentListResponse, BlockUnblockTutorResponse } from "../Interfaces/DTOs/IRepository.dto";
 
 dotenv.config();
-
-
 
 class tutorRepository implements ITutorRepository{
     
@@ -37,7 +37,7 @@ class tutorRepository implements ITutorRepository{
     }
 
 
-    async createTutor(tutorData: Partial<ITutor>): Promise<ITutor | null>{
+    async createTutor(tutorData: Partial<ITutor>): Promise<ITutor | null> {
         try {
             const { firstName, lastName, email, password } = tutorData ;
             const createdTutor = new TutorModel({
@@ -53,8 +53,7 @@ class tutorRepository implements ITutorRepository{
             return null;
         }
     }
-
-    async blockUnblock(tutorId:string):Promise<{ success: boolean; message?: string }>  {
+    async blockUnblock(tutorId: string): Promise<BlockUnblockTutorResponse> {
         try{
             const user = await TutorModel.findById(tutorId)
             if(!user){
@@ -69,7 +68,7 @@ class tutorRepository implements ITutorRepository{
         }
     }
 
-    async getAllTutors() {
+    async getAllTutors():Promise<ITutor[] | null> {
         try{
             const tutors = await TutorModel.find();
             return  tutors;
@@ -78,8 +77,7 @@ class tutorRepository implements ITutorRepository{
             return null
         }
     }
-
-    async addToSutdentList(userId: string, tutorId: string, tutorShare:number):Promise<{message?:string, success:boolean}> {
+    async addToSutdentList(userId: string, tutorId: string, tutorShare: number): Promise<AddToStudentListResponse> {
         try {
           // First, check if the course is already in the cart
     
