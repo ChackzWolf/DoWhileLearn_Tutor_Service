@@ -7,6 +7,21 @@ import { SendVerificationMail } from "../Utils/Send.email";
 import createToken from "../Utils/Activation.token";
 import { ITutorUseCase } from "../Interfaces/IServices/IService.interface";
 import { StatusCode } from "../Interfaces/Enums/Enums";
+import {
+    TutorLoginRequestDTO,
+    VerifyOtpRequestDTO,
+    ResendOtpRequestDTO,
+    TutorLoginResponseDTO,
+    FetchTutorsResponseDTO,
+    BlockUnblockResponseDTO,
+    AddStudentRequestDTO,
+    AddStudentResponseDTO,
+    TutorSignupRequestDTO,
+    TutorSignupResponseDTO,
+    VerifyOtpResponseDTO,
+    ResendOtpResponseDTO,
+    BlockUnblockRequestDTO
+    } from '../Interfaces/DTOs/IService.dto'
 dotenv.config();
 
 interface CreateTutor{
@@ -31,7 +46,8 @@ interface promiseReturn { success: boolean, message: string, tempId?: string, em
 
 export class TutorService implements ITutorUseCase{
     
-    async tutorRegister(tutorData: CreateTutor): Promise <promiseReturn> {
+    async tutorRegister(tutorData: TutorSignupRequestDTO): Promise<TutorSignupResponseDTO> {
+        
         try{
             console.log(`tutorService ${tutorData}`)
             const email = tutorData.email;
@@ -69,7 +85,7 @@ export class TutorService implements ITutorUseCase{
         } 
     }
 
-    async VerifyOtp(passedData: VerifyOtpData): Promise<{success:boolean, message:string, tutorData?:ITutor, accessToken?:string, refreshToken?:string , _id?:string}>{
+    async VerifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO> {
         try {
             console.log('ive vannarnu', passedData);
             const tempTutor: ITempTutor | null = await TempTutor.findById(passedData.tempId);
@@ -101,7 +117,8 @@ export class TutorService implements ITutorUseCase{
 
 
 
-    async ResendOTP(passedData : VerifyOtpData):Promise<{success: boolean, message:string}> {
+    async ResendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO> {
+        
         try{
             const {email,tempId} = passedData;
             let newOTP = generateOTP();
@@ -122,7 +139,7 @@ export class TutorService implements ITutorUseCase{
         }
     }
     
-    async tutorLogin(loginData: { email: string; password: string; }): Promise<{ success: boolean; message: string; tutorData?: ITutor ,accessToken?:string, refreshToken?:string , _id?:string}> {
+    async tutorLogin(loginData: TutorLoginRequestDTO): Promise<TutorLoginResponseDTO> {
         try {
             const {email, password} = loginData;
             const tutorData = await repository.findByEmail(email);
@@ -146,7 +163,8 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async fetchTutors(): Promise<{ success: boolean; tutors?: ITutor[] }> {
+    async fetchTutors(): Promise<FetchTutorsResponseDTO> {
+        
         try {
             const tutors = await repository.getAllTutors();
             console.log(tutors, 'students')
@@ -160,7 +178,7 @@ export class TutorService implements ITutorUseCase{
         }
     }
     
-    async blockUnblock(data:{tutorId:string}): Promise<{success:boolean; message?:string}> {
+    async blockUnblock(data: BlockUnblockRequestDTO): Promise<BlockUnblockResponseDTO> {
         try{
             console.log(data.tutorId,'from use case')
             const response = await repository.blockUnblock(data.tutorId);
@@ -175,7 +193,7 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async addToSutdentList (data:{tutorId:string,userId:string, tutorShare:number}):Promise<{message?:string,success:boolean, status:number}>{
+    async addToSutdentList(data: AddStudentRequestDTO): Promise<AddStudentResponseDTO> {
         try {
             console.log(data)
             const response = await repository.addToSutdentList(data.userId,data.tutorId, data.tutorShare);

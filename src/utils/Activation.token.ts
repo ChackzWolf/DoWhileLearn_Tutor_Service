@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import jwt ,{ Secret }from "jsonwebtoken";
-import { ITutor } from "../Schemas/Tutor.Schema";
+import { ITutor } from "../Interfaces/Models/ITutor";
 
 dotenv.config()
 
