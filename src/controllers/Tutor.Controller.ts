@@ -88,4 +88,18 @@ export class TutorController implements ITutorController {
             callback(err as grpc.ServiceError);
         }
     }
+
+
+    async isBlocked(call:grpc.ServerUnaryCall<any, any>, callback:grpc.sendUnaryData<any>):Promise<void> {
+        try {
+            console.log('isBlocked trig');
+            const data = call.request
+            console.log(data);
+            const response = await tutorService.checkIsBlocked(data);
+            console.log(response, 'response from controller')
+            callback(null,{isBlocked:response.isBlocked})
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
 }

@@ -8,8 +8,16 @@ service TutorService {
     rpc FetchTutorData(EmptyRequest) returns (ResponseAllTutors);
     rpc ToggleBlock (ToggleBlockRequest) returns (ToggleBlockResponse);
     rpc AddStudents (AddStudentsRequest) returns (AddStudentsResponse);
+    rpc isBlocked (TutorIdRequest) returns (BlockedStatusResponse);
 }
 
+message TutorIdRequest {
+    string tutorId = 1;
+}
+
+message BlockedStatusResponse {
+    bool isBlocked = 1;
+}
 message AddStudentsRequest {
     string userId = 1;
     string tutorId = 2;

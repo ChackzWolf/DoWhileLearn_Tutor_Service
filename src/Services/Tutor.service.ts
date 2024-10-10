@@ -24,24 +24,9 @@ import {
     } from '../Interfaces/DTOs/IService.dto'
 dotenv.config();
 
-interface CreateTutor{
-    firstName:string;
-    lastName: string; 
-    email: string;
-    password: string;
-}
-
-interface VerifyOtpData{
-    enteredOTP:string;
-    email:string;
-    tempId:string
-}
-
 
 
 const repository = new tutorRepository()
-
-interface promiseReturn { success: boolean, message: string, tempId?: string, email?: string }
  
 
 export class TutorService implements ITutorUseCase{
@@ -206,6 +191,16 @@ export class TutorService implements ITutorUseCase{
         } catch (error) {
             console.log(error)
             return {message :"Error occured while creating order", success: false , status: StatusCode.ExpectationFailed }
+        }
+    }
+
+    async checkIsBlocked(data: {tutorId:string}): Promise<{isBlocked:boolean | undefined}> {
+        try {
+            const response = await repository.isBlocked(data.tutorId);
+
+            return {isBlocked : response }
+        } catch (error) {
+            return {isBlocked:true}
         }
     }
 } 

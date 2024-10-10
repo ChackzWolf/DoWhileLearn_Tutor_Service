@@ -13,6 +13,7 @@ const app = express()
 connectDB()
 dotenv.config()
 
+
 // error log
 const logger = winston.createLogger({
     level: 'info',
@@ -25,7 +26,7 @@ const logger = winston.createLogger({
       new DailyRotateFile({
         filename: 'logs/application-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxFiles: '7d' // Keep logs for 14 days
+        maxFiles: '7d'
       })
     ],
   });
@@ -72,7 +73,8 @@ server.addService(tutorProto.TutorService.service, {
     Login: controller.tutorLogin,
     FetchTutorData: controller.fetchTutors,
     ToggleBlock: controller.blockUnblock,
-    AddStudents: controller.addStudent
+    AddStudents: controller.addStudent,
+    isBlocked: controller.isBlocked
 })
 
 grpcServer() 

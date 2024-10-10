@@ -68,6 +68,8 @@ class tutorRepository implements ITutorRepository{
         }
     }
 
+    
+
     async getAllTutors():Promise<ITutor[] | null> {
         try{
             const tutors = await TutorModel.find();
@@ -98,6 +100,15 @@ class tutorRepository implements ITutorRepository{
         } catch (error) {
           console.error('Error toggling course in cart:', error);
           throw new Error('Failed to update cart');
+        }
+      }
+
+      async isBlocked(userId: string): Promise<boolean | undefined> {
+        try {
+          const user : ITutor | null= await TutorModel.findById(userId)
+          return user?.isblocked
+        } catch (error) {
+          throw new Error("Tutor not found");
         }
       }
 
