@@ -18,9 +18,9 @@ import {
 export interface ITutorUseCase {
   tutorRegister(tutorData: TutorSignupRequestDTO): Promise <TutorSignupResponseDTO>;
 
-  VerifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO>;
+  verifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO>;
 
-  ResendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO>;
+  resendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO>;
 
   tutorLogin(loginData: TutorLoginRequestDTO): Promise<TutorLoginResponseDTO>;
 

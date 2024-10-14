@@ -33,7 +33,7 @@ export class TutorController implements ITutorController {
     async verifyOtp(call: grpc.ServerUnaryCall<TutorVerifyOtpRequestDTO, TutorVerifyOtpResponseDTO>, callback: grpc.sendUnaryData<TutorVerifyOtpResponseDTO>): Promise<void> {
         try {
             const data = call.request;
-            const response = await tutorService.VerifyOtp(data);
+            const response = await tutorService.verifyOtp(data);
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
@@ -43,7 +43,7 @@ export class TutorController implements ITutorController {
     async resendOtp(call: grpc.ServerUnaryCall<TutorResendOtpRequestDTO, TutorResendOtpResponseDTO>, callback: grpc.sendUnaryData<TutorResendOtpResponseDTO>): Promise<void> {
         try {
             const data = call.request;
-            const response = await tutorService.ResendOTP(data);
+            const response = await tutorService.resendOTP(data);
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);

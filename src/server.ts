@@ -8,6 +8,7 @@ import express from "express"
 import morgan from 'morgan';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { configs } from "./Configs/ENV.cofnigs/ENV.configs";
 const app = express()
 
 connectDB()
@@ -26,7 +27,7 @@ const logger = winston.createLogger({
       new DailyRotateFile({
         filename: 'logs/application-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxFiles: '7d'
+        maxFiles: configs.LOG_RETENTION_DAYS
       })
     ],
   });
@@ -50,7 +51,7 @@ const server = new grpc.Server()
 
 const grpcServer = () => {
     server.bindAsync(
-        `0.0.0.0:${process.env.TUTOR_GRPC_PORT}`,
+        `0.0.0.0:${configs.TUTOR_GRPC_PORT}`,
         grpc.ServerCredentials.createInsecure(),
         (err,port)=>{
             if(err){

@@ -2,6 +2,7 @@ import mongoose, { Document, Schema,Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ITutor,ITempTutor } from "../Interfaces/Models/ITutor";
+import { configs } from "../Configs/ENV.cofnigs/ENV.configs";
 
 
 const TutorSchema: Schema <ITutor> = new Schema({
@@ -85,9 +86,9 @@ TutorSchema.pre<ITutor>("save", async function (next) {
 TutorSchema.methods.SignAccessToken = function () {
     return jwt.sign(
       { id: this._id, role: this.role },
-      process.env.ACCESS_TOKEN || "",
+       configs.JWT_SECRET || "",
       {
-        expiresIn: "5m",
+        expiresIn: configs.JWT_EXPIRATION_TIME,
       }
     );
   };
@@ -98,9 +99,9 @@ TutorSchema.methods.SignAccessToken = function () {
 TutorSchema.methods.SignRefreshToken = function () {
     return jwt.sign(
       { id: this._id, role: this.role },
-      process.env.REFRESH_TOKEN || "",
+      configs.REFRESH_TOKEN_SECRET || "",
       {
-        expiresIn: "3d",
+        expiresIn: configs.JWT_EXPIRATION_TIME,
       }
     );
 };
