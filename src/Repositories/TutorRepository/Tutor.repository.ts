@@ -1,8 +1,8 @@
-import TutorModel, { TempTutor } from "../Schemas/Tutor.Schema";
-import { ITutor,ITempTutor } from "../Interfaces/Models/ITutor";
-import { ITutorRepository } from "../Interfaces/IRepositories/IRepository.interface";
+import TutorModel, { TempTutor } from "../../Schemas/Tutor.Schema";
+import { ITutor,ITempTutor } from "../../Interfaces/Models/ITutor";
+import { ITutorRepository } from "../../Interfaces/IRepositories/IRepository.interface";
 import dotenv from "dotenv";
-import { AddToStudentListResponse, BlockUnblockTutorResponse } from "../Interfaces/DTOs/IRepository.dto";
+import { AddToStudentListResponse, BlockUnblockTutorResponse } from "../../Interfaces/DTOs/IRepository.dto";
 
 dotenv.config();
 

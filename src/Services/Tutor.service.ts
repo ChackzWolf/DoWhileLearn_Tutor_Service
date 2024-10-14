@@ -1,4 +1,4 @@
-import tutorRepository from "../Repositories/Tutor.repository";
+import tutorRepository from "../Repositories/TutorRepository/Tutor.repository";
 import { ITutor , ITempTutor } from "../Interfaces/Models/ITutor";
 import  {TempTutor} from "../Schemas/Tutor.Schema";
 import dotenv from "dotenv"
@@ -70,7 +70,7 @@ export class TutorService implements ITutorUseCase{
         } 
     }
 
-    async VerifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO> {
+    async verifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO> {
         try {
             console.log('ive vannarnu', passedData);
             const tempTutor: ITempTutor | null = await TempTutor.findById(passedData.tempId);
@@ -102,7 +102,7 @@ export class TutorService implements ITutorUseCase{
 
 
 
-    async ResendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO> {
+    async resendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO> {
         
         try{
             const {email,tempId} = passedData;
@@ -131,6 +131,11 @@ export class TutorService implements ITutorUseCase{
             if(tutorData){
                 const checkPassword = await tutorData.comparePassword(password)
                 if(checkPassword){
+                    const tutorId = tutorData._id;
+                    const isBlocked = await repository.isBlocked(tutorId)
+                    if(isBlocked){
+                        return {success: false, message : 'isBlocked'}
+                    }
                     console.log(tutorData,'kkkkkkkkk') 
                     const _id = tutorData._id;
                     const {refreshToken, accessToken} = createToken(tutorData, "TUTOR")
