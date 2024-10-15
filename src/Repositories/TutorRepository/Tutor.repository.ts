@@ -3,14 +3,21 @@ import { ITutor,ITempTutor } from "../../Interfaces/Models/ITutor";
 import { ITutorRepository } from "../../Interfaces/IRepositories/IRepository.interface";
 import dotenv from "dotenv";
 import { AddToStudentListResponse, BlockUnblockTutorResponse } from "../../Interfaces/DTOs/IRepository.dto";
+import { BaseRepository } from "../BaseRepository/Base.Repository";
+import { ObjectId } from "mongodb";
+
 
 dotenv.config();
 
-class tutorRepository implements ITutorRepository{
+class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository{
+
+    constructor() {
+        super(TutorModel);
+    }
     
     async findByEmail (email: string): Promise<ITutor | null>{
         try {
-            const tutor = await TutorModel.findOne({ email }).exec(); //.exec() method ensures that the query returns a promise.
+            const tutor = await this.findOne({ email })
             console.log(tutor, 'email in tutorRepository')
             return tutor;
         } catch (err) {
@@ -40,13 +47,13 @@ class tutorRepository implements ITutorRepository{
     async createTutor(tutorData: Partial<ITutor>): Promise<ITutor | null> {
         try {
             const { firstName, lastName, email, password } = tutorData ;
-            const createdTutor = new TutorModel({
+            const savedTutor = this.create({
                 firstName,
                 lastName,
                 email,
                 password,
             });
-            const savedTutor = await createdTutor.save();
+           
             return savedTutor;
         } catch (err) {
             console.error("Error creating tutor:", err);
@@ -55,12 +62,12 @@ class tutorRepository implements ITutorRepository{
     }
     async blockUnblock(tutorId: string): Promise<BlockUnblockTutorResponse> {
         try{
-            const user = await TutorModel.findById(tutorId)
+            const user = await this.findById(tutorId)
             if(!user){
                 return {success:false, message: "User not found."}
             }
-            await user.toggleBlockStatus();
-        
+            user.isblocked = !user.isblocked;
+            await user.save()
             return {success: true, message: `User ${user.isblocked? 'blocked': "Unblocked"} successfully`};
         }catch (error) {
             console.error('Error toggling user block status:', error);
@@ -72,7 +79,7 @@ class tutorRepository implements ITutorRepository{
 
     async getAllTutors():Promise<ITutor[] | null> {
         try{
-            const tutors = await TutorModel.find();
+            const tutors = await this.findAll();
             return  tutors;
         }catch(err){
             console.error("error getting users: " , err);
@@ -82,20 +89,19 @@ class tutorRepository implements ITutorRepository{
     async addToSutdentList(userId: string, tutorId: string, tutorShare: number): Promise<AddToStudentListResponse> {
         try {
           // First, check if the course is already in the cart
-    
-            // If courseId is not in cart, add it
-            await TutorModel.updateOne(
-              { _id: tutorId },
-              { $addToSet: { students: userId } } // Add courseId to cart array, ensuring uniqueness
-            );
-                console.log(tutorShare, 'this is tutor share')
-            const addmoney = await TutorModel.updateOne(
-                { _id: tutorId },
-                { $inc: { wallet: tutorShare } }  // Increment the wallet by the amountToAdd
-            );
-                console.log(addmoney , 'added money')
-            
-            return { message: 'Course added to Purchase List', success:true};
+            const tutor = await this.findById(tutorId);
+            const userObjectId = new ObjectId(userId);
+            if(tutor){
+                if(!tutor.students.includes(userObjectId)){
+                  tutor.students.push(userObjectId);
+                  await tutor.save();
+                  return { message: 'Student added to Purchase List', success:true};
+                }else{
+                  return { message: 'Student already in purchase list', success:false};
+                }
+              }else{
+                return { message: 'Tutor not found.', success:false};
+              }
           
         } catch (error) {
           console.error('Error toggling course in cart:', error);
@@ -105,13 +111,12 @@ class tutorRepository implements ITutorRepository{
 
       async isBlocked(userId: string): Promise<boolean | undefined> {
         try {
-          const user : ITutor | null= await TutorModel.findById(userId)
+          const user : ITutor | null= await this.findById(userId)
           return user?.isblocked
         } catch (error) {
           throw new Error("Tutor not found");
         }
       }
-
 };
 
 export default tutorRepository
