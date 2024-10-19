@@ -7,8 +7,73 @@ service TutorService {
     rpc ResendOTP(OTPRequest) returns (OTPResponse);
     rpc FetchTutorData(EmptyRequest) returns (ResponseAllTutors);
     rpc ToggleBlock (ToggleBlockRequest) returns (ToggleBlockResponse);
-    rpc AddStudents (AddStudentsRequest) returns (AddStudentsResponse);
     rpc isBlocked (TutorIdRequest) returns (BlockedStatusResponse);
+    rpc SendOtpToEmail (SendOtpEmail) returns (SendOtpResponse);
+    rpc VerifyOTPResetPassword (OTPRequest) returns (OTPResponse);
+    rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+    rpc UploadImage(ImageRequest) returns (ImageResponse);
+    rpc UploadPDF(PDFRequest) returns (PDFResponse);
+    rpc RegistrationDetails(RegistrationDetailsRequest) returns (RegistrationDetailsResponse);
+}
+
+message RegistrationDetailsResponse {
+    bool success = 1;
+    int32 status = 2;
+    string message =3;
+}
+message Qualification {
+  string qualification = 1;
+  string certificate = 2;
+}
+
+message RegistrationDetailsRequest {
+  string bio = 1;
+  repeated string expertise = 2;
+  repeated Qualification qualifications = 3;
+  string profilePicture = 4;
+  string cv = 5;
+}
+message PDFRequest {
+  bytes pdfBinary = 1;
+  string pdfName = 2;
+}
+message PDFResponse {
+  string message = 1;
+  string s3Url = 2;
+  bool success = 3;
+}
+message ImageRequest {
+  bytes imageBinary = 1;
+  string imageName = 2;
+}
+message ImageResponse {
+  string message = 1;
+  string s3Url = 2;
+  bool success = 3;
+}
+
+
+message ResetPasswordRequest {
+    string tutorId = 1;
+    string password = 2;
+}
+message ResetPasswordResponse{
+    bool success = 1;
+    int32 status = 2;
+    string message = 3;
+}
+
+
+message SendOtpEmail {
+    string email = 1;
+}
+
+message SendOtpResponse {
+    string message = 1;
+    bool success = 2;
+    int32 status = 3;
+    string email = 4;
+    string tutorId = 5;
 }
 
 message TutorIdRequest {
@@ -18,6 +83,7 @@ message TutorIdRequest {
 message BlockedStatusResponse {
     bool isBlocked = 1;
 }
+
 message AddStudentsRequest {
     string userId = 1;
     string tutorId = 2;
@@ -29,6 +95,7 @@ message AddStudentsResponse {
     string message = 2;
     bool status = 3;
 }
+
 message EmptyRequest {}
 
 message ToggleBlockRequest {
@@ -39,6 +106,7 @@ message ToggleBlockResponse {
     string message = 1;
     bool success = 2;
 }
+
 
 message ResponseAllTutors {
     repeated tutorData tutors = 1;
@@ -73,6 +141,7 @@ message OTPResponse {
     int32 status = 4;
     string accessToken=5;
     string refreshToken = 6;
+    string tutorId = 7;
 }
 
 message LoginRequest {
@@ -85,9 +154,8 @@ message LoginResponse {
     tutorData tutorData = 2;
     string message = 3;
     int32 status = 4;
-    string accessToken = 5;
+    string accessToken=5;
     string refreshToken = 6;
-    string _id = 7;
 }
 
 message tutorData{

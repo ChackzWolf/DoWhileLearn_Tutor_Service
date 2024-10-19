@@ -97,3 +97,27 @@ export interface AddStudentRequestDTO {
     tutorShare: number;
 }
 
+  // DTO for image upload
+  export interface UploadImageDTO {
+    imageBinary: Buffer;
+    imageName: string;
+  }
+  
+  export interface UploadImageResponseDTO {
+    success: boolean;
+    message: string;
+    s3Url?: string;
+  }
+
+// DTO for image upload
+export interface UploadPdfDTO {
+    pdfBinary: Buffer;
+    pdfName: string;
+  }
+  
+  export interface UploadPdfResponseDTO {
+    success: boolean;
+    message: string;
+    s3Url?: string;
+  }
+

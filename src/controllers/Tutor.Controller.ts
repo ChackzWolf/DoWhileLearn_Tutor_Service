@@ -14,7 +14,11 @@ import {
             BlockUnblockResponseDTO, 
             FetchTutorsResponseDTO, 
             AddStudentRequestDTO, 
-            AddStudentResponseDTO 
+            AddStudentResponseDTO ,
+            ImageRequest,
+            ImageResponse,
+            PDFRequest,
+            PDFResponse
         } from '../Interfaces/DTOs/IController.dto'; 
 
 const tutorService = new TutorService();
@@ -54,6 +58,7 @@ export class TutorController implements ITutorController {
         try {
             const data = call.request;
             const response = await tutorService.tutorLogin(data);
+            console.log(response)
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
@@ -102,4 +107,71 @@ export class TutorController implements ITutorController {
             callback(error as grpc.ServiceError);
         }
     }
+
+    async resetPassword(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void> {
+        try{
+            console.log('trig respassword controller')
+            const data = call.request;
+            const response = await tutorService.resetPassword(data)
+            callback(null, response)
+        }catch(error){
+            callback(error as grpc.ServiceError);
+        }
+    } 
+
+    async sendOtpToEmail (call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void> {
+        try {
+            console.log('trig to otp email send controller ', call.request)
+            const data = call.request;
+            const response = await tutorService.sendEmailOtp(data);
+            console.log('reseponse from controller', response);
+            callback(null, response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
+
+    async VerifyEnteredOTP (call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void> {
+        try {
+            console.log('trig', call.request);
+            const data = call.request;
+            const response = await tutorService.resetPasswordVerifyOTP(data);
+            console.log(response,'response from controller')
+            callback(null,response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
+
+    async uploadImage(
+        call: grpc.ServerUnaryCall<ImageRequest, ImageResponse>,
+        callback: grpc.sendUnaryData<ImageResponse>
+    ): Promise<void> {
+        try {
+            const data = call.request;
+            const response = await tutorService.uploadImage(data);
+            callback(null, response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
+
+    async uploadPDF(
+        call: grpc.ServerUnaryCall<PDFRequest, PDFResponse>,
+        callback: grpc.sendUnaryData<PDFResponse>
+    ): Promise<void> {
+        try {
+            const data = call.request;
+            console.log(data, 'data form controller');
+            const response = await tutorService.uploadPdf(data);
+            console.log(response, 'response form controller');
+            callback(null, response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
+    async updateRegistrationDetails(call:grpc.ServerUnaryCall<any,any>,callback:grpc.sendUnaryData<any>) {
+        console.log(call.request,'data');
+    }
+
 }

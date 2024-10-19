@@ -1,10 +1,11 @@
-import TutorModel, { TempTutor } from "../../Schemas/Tutor.Schema";
+import TutorModel, { TempTutor,Otp } from "../../Schemas/Tutor.Schema";
 import { ITutor,ITempTutor } from "../../Interfaces/Models/ITutor";
 import { ITutorRepository } from "../../Interfaces/IRepositories/IRepository.interface";
 import dotenv from "dotenv";
 import { AddToStudentListResponse, BlockUnblockTutorResponse } from "../../Interfaces/DTOs/IRepository.dto";
 import { BaseRepository } from "../BaseRepository/Base.Repository";
 import { ObjectId } from "mongodb";
+import { StatusCode } from "../../Interfaces/Enums/Enums";
 
 
 dotenv.config();
@@ -92,7 +93,7 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             const tutor = await this.findById(tutorId);
             const userObjectId = new ObjectId(userId);
             if(tutor){
-                if(!tutor.students.includes(userObjectId)){
+                if(!tutor.students.includes(userObjectId)){ 
                   tutor.students.push(userObjectId);
                   await tutor.save();
                   return { message: 'Student added to Purchase List', success:true};
@@ -109,14 +110,53 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
         }
       }
 
-      async isBlocked(userId: string): Promise<boolean | undefined> {
+      async isBlocked(tutorId: string): Promise<boolean | undefined> {
         try {
-          const user : ITutor | null= await this.findById(userId)
-          return user?.isblocked
+          const tutor : ITutor | null= await this.findById(tutorId)
+          return tutor?.isblocked
         } catch (error) {
           throw new Error("Tutor not found");
         }
       }
+
+      async passwordChange(tutorId:string,newPassword:string):Promise<{message:string,success:boolean,status:number}>{
+        try{
+          const tutor: ITutor | null = await this.findById(tutorId);
+          if (!tutor) {
+            return { message: 'User not found!', success: false, status: StatusCode.NotFound };
+          }
+          // Ensure password is hashed before saving (if necessary)
+          tutor.password = newPassword
+          await tutor.save(); // Save the updated user with the new password
+          return { message: 'Password updated successfully!', success: true, status: StatusCode.OK }; 
+        } catch (error) {
+          throw new Error("User not found");
+        }
+      }
+
+      async storeOTP(email: string, otp: string) {
+        try {
+            const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+            
+            // Use findOneAndUpdate to either update or create the OTP entry
+            const otpEntry = await Otp.findOneAndUpdate(
+                { email }, // Find the entry with the same email
+                { otp, expiresAt }, // Update the OTP and expiration time
+                { new: true, upsert: true } // Options: return the updated document and create if it doesn't exist
+            );
+    
+            console.log(otpEntry, 'otpentry');
+        } catch (error: unknown) {
+            console.log(error);
+        }
+    }
+
+      async verifyOTP(email:string, otp:string) {
+        const otpEntry = await Otp.findOne({ email, otp, expiresAt: { $gt: new Date() } });
+        return otpEntry !== null;
+      }
+
+    
 };
 
 export default tutorRepository

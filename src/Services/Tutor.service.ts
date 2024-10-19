@@ -7,7 +7,9 @@ import { SendVerificationMail } from "../Utils/Send.email";
 import createToken from "../Utils/Activation.token";
 import { ITutorUseCase } from "../Interfaces/IServices/IService.interface";
 import { StatusCode } from "../Interfaces/Enums/Enums";
-import {
+import { uploadFile, uploadImage, uploadPDF } from "../Configs/S3.configs/S3.configs"
+import {UploadImageDTO,
+    UploadImageResponseDTO,
     TutorLoginRequestDTO,
     VerifyOtpRequestDTO,
     ResendOtpRequestDTO,
@@ -20,7 +22,9 @@ import {
     TutorSignupResponseDTO,
     VerifyOtpResponseDTO,
     ResendOtpResponseDTO,
-    BlockUnblockRequestDTO
+    BlockUnblockRequestDTO,
+    UploadPdfDTO,
+    UploadPdfResponseDTO
     } from '../Interfaces/DTOs/IService.dto'
 dotenv.config();
 
@@ -206,6 +210,80 @@ export class TutorService implements ITutorUseCase{
             return {isBlocked : response }
         } catch (error) {
             return {isBlocked:true}
+        }
+    }
+
+    async resetPassword(data: {tutorId:string, password:string}){
+        try {
+            const {tutorId,password} = data;
+            const response = await repository.passwordChange(tutorId, password);
+            return response
+        } catch (error) {
+            return {message:'error occured in service while changing password', success:false, status: StatusCode.NotModified}
+        }
+    }
+
+    async sendEmailOtp (data: {email:string}){
+        try {
+            const email = data.email; 
+            const emailExists = await repository.findByEmail(email);
+            if(!emailExists){
+                console.log("email not found triggered")
+                return {success: false, message: "Email not found", status:StatusCode.NotFound };
+            }
+            let otp = generateOTP();
+            console.log(`OTP : [ ${otp} ]`);
+            await SendVerificationMail(email,otp)
+            console.log('1')
+            await repository.storeOTP(email,otp);
+            console.log('2')
+            return {message: 'An OTP has send to your email address.', success:true, status: StatusCode.Found,email};
+        } catch (error) {
+            return {message:'error occured in sending OTP.', success:false, status: StatusCode.Conflict}
+        }
+    }
+
+    async resetPasswordVerifyOTP(data: {email:string,enteredOTP:string}){
+        try { 
+            const {email,enteredOTP} = data;
+            const response = await repository.verifyOTP(email,enteredOTP)
+            const user = await repository.findByEmail(email);
+            if(response && user){
+                return {success:true, message: 'Email has been verified successfuly.',status:StatusCode.Accepted,email,tutorId:user._id}
+            }
+            return {success:false, message: 'Entered wrong OTP.', status:StatusCode.NotAcceptable,email}
+        } catch (error) {
+            return {success:false, message: "Something went wrong.",status:StatusCode.FailedDependency, email:data.email} 
+        }
+    }
+
+    async uploadImage(data: UploadImageDTO): Promise<UploadImageResponseDTO> {
+        try {
+            const response = await uploadImage(data.imageBinary, data.imageName)
+            return { message: "Image uploaded successfully.", s3Url: response.publicUrl, success: true };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error('File upload failed:', error.message);
+                return { success: false, message: `File upload failed: ${error.message}` };
+            } else {
+                console.error('An unknown error occurred:', error);
+                return { success: false, message: 'File upload failed: Unknown error' };
+            }
+        }
+    }
+
+    async uploadPdf(data: UploadPdfDTO): Promise<UploadPdfResponseDTO> {
+        try {
+            const response = await uploadPDF(data.pdfBinary, data.pdfName)
+            return { message: "Image uploaded successfully.", s3Url: response.publicUrl, success: true };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error('File upload failed:', error.message);
+                return { success: false, message: `File upload failed: ${error.message}` };
+            } else {
+                console.error('An unknown error occurred:', error);
+                return { success: false, message: 'File upload failed: Unknown error' };
+            }
         }
     }
 } 

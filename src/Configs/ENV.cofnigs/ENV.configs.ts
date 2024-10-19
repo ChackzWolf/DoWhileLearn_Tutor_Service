@@ -14,6 +14,11 @@ export const configs = {
     // DB COFNIGS
     MONGODB_URL_TUTOR : process.env.MONGODB_URL_TUTOR || '',
     
+    //AWS CONFIGS
+    BUCKET_NAME: process.env.BUCKET_NAME || '',
+    AWS_ACCESS_KEY_ID : process.env.AWS_ACCESS_KEY_ID || '',
+    AWS_SECRET_ACCESS_KEY : process.env.AWS_SECRET_ACCESS_KEY || '',
+    AWS_REGION : process.env.AWS_REGION || '',
     
     //JWT CONFIGS
     JWT_SECRET : process.env.JWT_SECRET || '',

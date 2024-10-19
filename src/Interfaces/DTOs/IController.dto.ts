@@ -94,3 +94,27 @@ export interface AddStudentRequestDTO {
     userId: string;
     tutorShare: number;
 }
+
+
+export interface ImageRequest {
+    imageBinary: Buffer;
+    imageName: string;
+  }
+  
+  export interface ImageResponse {
+    message: string;
+    s3Url?: string;
+    success: boolean;
+  }
+
+
+  export interface PDFRequest {
+    pdfBinary: Buffer;
+    pdfName: string;
+  }
+    
+  export interface PDFResponse {
+    message: string;
+    s3Url?: string;
+    success: boolean;
+  }

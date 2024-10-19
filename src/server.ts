@@ -75,7 +75,13 @@ server.addService(tutorProto.TutorService.service, {
     FetchTutorData: controller.fetchTutors,
     ToggleBlock: controller.blockUnblock,
     AddStudents: controller.addStudent,
-    isBlocked: controller.isBlocked
+    isBlocked: controller.isBlocked,
+    SendOtpToEmail: controller.sendOtpToEmail ,
+    VerifyOTPResetPassword : controller.VerifyEnteredOTP,
+    ResetPassword: controller.resetPassword,
+    UploadImage: controller.uploadImage,
+    UploadPDF: controller.uploadPDF,
+    RegistrationDetails: controller.updateRegistrationDetails
 })
 
 grpcServer() 

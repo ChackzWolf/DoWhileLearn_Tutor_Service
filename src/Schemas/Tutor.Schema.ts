@@ -55,7 +55,11 @@ const TempTutorShcema: Schema <ITempTutor> = new Schema({
     timestamps: true,
 })
 
-
+const otpSchema = new Schema({
+    email: { type: String, required: true, unique: true },
+    otp: { type: String, required: true },
+    expiresAt: { type: Date, required: true }
+  });
 
 TutorSchema.methods.toggleBlockStatus = async function (): Promise<void> {
     this.isblocked = !this.isblocked; // Toggle the blocked status
@@ -96,7 +100,7 @@ TutorSchema.methods.SignAccessToken = function () {
 
 
 // sign refresh token
-TutorSchema.methods.SignRefreshToken = function () {
+TutorSchema.methods.SignRefreshToken = function () { 
     return jwt.sign(
       { id: this._id, role: this.role },
       configs.REFRESH_TOKEN_SECRET || "",
@@ -112,7 +116,7 @@ TutorSchema.methods.comparePassword = async function (enteredPassword: string) {
 };
 
 
-
+export const Otp = mongoose.model("setOTP",otpSchema)
 export const TempTutor = mongoose.model<ITempTutor>("TempTutorData",TempTutorShcema)
 const TutorModel = mongoose.model<ITutor>("Tutor", TutorSchema);
 
