@@ -1,11 +1,14 @@
-import mongoose, { Document, Schema,Types } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ITutor,ITempTutor } from "../Interfaces/Models/ITutor";
+import { ITutor, ITempTutor, IQualification } from "../Interfaces/Models/ITutor";
 import { configs } from "../Configs/ENV.cofnigs/ENV.configs";
 
 
-const TutorSchema: Schema <ITutor> = new Schema({
+
+
+
+const TutorSchema: Schema<ITutor> = new Schema({
     firstName: {
         type: String,
         required: true
@@ -26,16 +29,50 @@ const TutorSchema: Schema <ITutor> = new Schema({
         type: Boolean,
         default: false,
     },
-    students:[{
+    bio: {
+        type: String,
+        required: true,
+    },
+    expertise: {
+        type: [String], // An array of strings (repeated field)
+        required: true,
+    },
+    qualifications: {
+        type: [QualificationSchema], // An array of Qualification objects
+        required: true,
+    },
+    profilePicture: {
+        type: String, // URL to the profile picture
+        required: true,
+    },
+    cv: {
+        type: String, // URL to the CV
+        required: true,
+    },
+    students: [{
         type: Schema.Types.ObjectId,
     }],
     wallet: {
         type: Number,
-        default:0
+        default: 0
     }
 })
- 
-const TempTutorShcema: Schema <ITempTutor> = new Schema({
+
+
+
+const QualificationSchema Schema<IQualification> = new Schema({
+    qualification: {
+        type: String,
+        required: true,
+    },
+    certificate: {
+        type: String,
+        required: true,
+    }
+});
+
+
+const TempTutorShcema: Schema<ITempTutor> = new Schema({
     tutorData: {
         type: Object,
         require: true,
@@ -45,21 +82,21 @@ const TempTutorShcema: Schema <ITempTutor> = new Schema({
         required: true,
     },
     createdAt: {
-        type:Date,
+        type: Date,
         default: Date.now,
         expires: 900 // expires after 15 minutes
     }
 }
-,
-{
-    timestamps: true,
-})
+    ,
+    {
+        timestamps: true,
+    })
 
 const otpSchema = new Schema({
     email: { type: String, required: true, unique: true },
     otp: { type: String, required: true },
     expiresAt: { type: Date, required: true }
-  });
+});
 
 TutorSchema.methods.toggleBlockStatus = async function (): Promise<void> {
     this.isblocked = !this.isblocked; // Toggle the blocked status
@@ -80,7 +117,7 @@ TutorSchema.methods.block = async function (): Promise<void> {
 // Hash password
 TutorSchema.pre<ITutor>("save", async function (next) {
     if (!this.isModified("password")) {
-      next();
+        next();
     }
     this.password = await bcrypt.hash(this.password || "", 10);
     next();
@@ -89,24 +126,24 @@ TutorSchema.pre<ITutor>("save", async function (next) {
 // sign access token
 TutorSchema.methods.SignAccessToken = function () {
     return jwt.sign(
-      { id: this._id, role: this.role },
-       configs.JWT_SECRET || "",
-      {
-        expiresIn: configs.JWT_EXPIRATION_TIME,
-      }
+        { id: this._id, role: this.role },
+        configs.JWT_SECRET || "",
+        {
+            expiresIn: configs.JWT_EXPIRATION_TIME,
+        }
     );
-  };
+};
 
 
 
 // sign refresh token
-TutorSchema.methods.SignRefreshToken = function () { 
+TutorSchema.methods.SignRefreshToken = function () {
     return jwt.sign(
-      { id: this._id, role: this.role },
-      configs.REFRESH_TOKEN_SECRET || "",
-      {
-        expiresIn: configs.JWT_EXPIRATION_TIME,
-      }
+        { id: this._id, role: this.role },
+        configs.REFRESH_TOKEN_SECRET || "",
+        {
+            expiresIn: configs.JWT_EXPIRATION_TIME,
+        }
     );
 };
 
@@ -116,8 +153,8 @@ TutorSchema.methods.comparePassword = async function (enteredPassword: string) {
 };
 
 
-export const Otp = mongoose.model("setOTP",otpSchema)
-export const TempTutor = mongoose.model<ITempTutor>("TempTutorData",TempTutorShcema)
+export const Otp = mongoose.model("setOTP", otpSchema)
+export const TempTutor = mongoose.model<ITempTutor>("TempTutorData", TempTutorShcema)
 const TutorModel = mongoose.model<ITutor>("Tutor", TutorSchema);
 
 export default TutorModel; 

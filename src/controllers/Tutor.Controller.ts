@@ -172,6 +172,14 @@ export class TutorController implements ITutorController {
     }
     async updateRegistrationDetails(call:grpc.ServerUnaryCall<any,any>,callback:grpc.sendUnaryData<any>) {
         console.log(call.request,'data');
+        const data = call.request;
+        try {
+            const response = await tutorService.uploadPdf(data);
+            console.log(response, 'response form controller');
+            callback(null, response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
     }
 
 }
