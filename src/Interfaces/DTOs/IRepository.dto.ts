@@ -10,4 +10,12 @@ export interface AddToStudentListResponse {
     message?:string;
     success:boolean;
 }
+export interface AddRegistrationDetailsRequest {
+    tutorId: string;
+    bio: string;
+    expertise: string[];
+    qualifications: { qualification: string; certificate: string }[];
+    profilePicture: string;
+    cv: string;
+}
 

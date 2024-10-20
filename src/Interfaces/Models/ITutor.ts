@@ -7,6 +7,13 @@ export interface IQualification {
     certificate: string;
 }
 
+// Interface for the course document
+export interface ICourses extends Document {
+    course: string;
+    students: Types.ObjectId[]; // Array of student ObjectIds
+}
+
+
 export interface ITutor extends Document {
     _id: string;
     firstName: string;
@@ -19,6 +26,7 @@ export interface ITutor extends Document {
     qualifications: IQualification[]; // Array of Qualification objects
     profilePicture: string; // Profile picture URL
     cv: string; // CV URL
+    courses: ICourses[]
     students: mongoose.Types.ObjectId[]; // Array of student ObjectIds
     wallet: number;
     

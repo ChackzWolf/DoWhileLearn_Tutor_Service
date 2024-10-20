@@ -286,4 +286,12 @@ export class TutorService implements ITutorUseCase{
             }
         }
     }
+
+    async addRegistrationDetails(data){
+        try {
+            const response = await repository.addRegistrationDetails(data)
+        } catch (error) {
+            
+        }
+    }
 } 

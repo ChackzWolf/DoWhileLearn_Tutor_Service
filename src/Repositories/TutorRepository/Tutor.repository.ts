@@ -2,7 +2,7 @@ import TutorModel, { TempTutor,Otp } from "../../Schemas/Tutor.Schema";
 import { ITutor,ITempTutor } from "../../Interfaces/Models/ITutor";
 import { ITutorRepository } from "../../Interfaces/IRepositories/IRepository.interface";
 import dotenv from "dotenv";
-import { AddToStudentListResponse, BlockUnblockTutorResponse } from "../../Interfaces/DTOs/IRepository.dto";
+import { AddToStudentListResponse, BlockUnblockTutorResponse, AddRegistrationDetailsRequest } from "../../Interfaces/DTOs/IRepository.dto";
 import { BaseRepository } from "../BaseRepository/Base.Repository";
 import { ObjectId } from "mongodb";
 import { StatusCode } from "../../Interfaces/Enums/Enums";
@@ -156,6 +156,24 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
         return otpEntry !== null;
       }
 
+      async addRegistrationDetails(data:AddRegistrationDetailsRequest) {
+        const tutor: ITutor | null= await this.findById(data.tutorId)
+        const {bio,expertise,qualifications,profilePicture,cv} = data;
+            // Null check for tutor
+        if (!tutor) {
+            return { success: false, message: 'Tutor not found!' };
+        }
+        tutor.bio = bio;
+        tutor.expertise = expertise;
+        tutor.qualifications = qualifications;
+        tutor.profilePicture = profilePicture;
+        tutor.cv = cv;
+    
+        // Save the updated tutor profile
+        await tutor.save();
+        return { success: true, message: 'Tutor registration details updated successfully!' };
+
+      } 
     
 };
 

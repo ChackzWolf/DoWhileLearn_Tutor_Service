@@ -2,6 +2,7 @@ import { ITutor, ITempTutor } from "../Models/ITutor";
 import {
         BlockUnblockTutorResponse,
         AddToStudentListResponse,
+        AddRegistrationDetailsRequest
         } from '../DTOs/IRepository.dto'
 export interface ITutorRepository {
   findByEmail(email: string): Promise<ITutor | null>;

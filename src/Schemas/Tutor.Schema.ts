@@ -1,8 +1,30 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ITutor, ITempTutor, IQualification } from "../Interfaces/Models/ITutor";
+import { ITutor, ITempTutor, IQualification, ICourses } from "../Interfaces/Models/ITutor";
 import { configs } from "../Configs/ENV.cofnigs/ENV.configs";
+
+
+const QualificationSchema: Schema<IQualification> = new Schema({
+    qualification: {
+        type: String,
+        required: true,
+    },
+    certificate: {
+        type: String,
+        required: true,
+    }
+});
+
+const Courses: Schema<ICourses> = new Schema({
+    course: {
+        type: String,
+        required: true,
+    },
+    students: [{
+        type: Schema.Types.ObjectId,
+    }],
+});
 
 
 
@@ -35,23 +57,19 @@ const TutorSchema: Schema<ITutor> = new Schema({
     },
     expertise: {
         type: [String], // An array of strings (repeated field)
-        required: true,
     },
     qualifications: {
         type: [QualificationSchema], // An array of Qualification objects
-        required: true,
     },
     profilePicture: {
         type: String, // URL to the profile picture
-        required: true,
     },
     cv: {
         type: String, // URL to the CV
-        required: true,
     },
-    students: [{
-        type: Schema.Types.ObjectId,
-    }],
+    courses: {
+        type: [Courses],
+    },
     wallet: {
         type: Number,
         default: 0
@@ -60,16 +78,6 @@ const TutorSchema: Schema<ITutor> = new Schema({
 
 
 
-const QualificationSchema Schema<IQualification> = new Schema({
-    qualification: {
-        type: String,
-        required: true,
-    },
-    certificate: {
-        type: String,
-        required: true,
-    }
-});
 
 
 const TempTutorShcema: Schema<ITempTutor> = new Schema({
