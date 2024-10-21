@@ -19,6 +19,7 @@ export interface ITutor extends Document {
     firstName: string;
     lastName: string;
     email: string;
+    phoneNumber:string;
     password: string;
     isblocked: boolean;
     bio: string; // Bio field

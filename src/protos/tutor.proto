@@ -119,6 +119,7 @@ message RegisterRequest {
     string lastName = 2;
     string email = 3;
     string password = 4;
+    string phoneNumber = 5;
 }
 
 message RegisterResponse {
@@ -166,4 +167,10 @@ message tutorData{
     string password = 4;
     string _id = 5;
     bool isblocked = 6;
+    string bio = 7;
+    repeated string expertise = 8;
+    repeated Qualification qualifications = 9;
+    string profilePicture = 10;
+    string cv = 11;
+    string tutorId = 12;
 }

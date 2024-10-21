@@ -18,7 +18,7 @@ export interface VerifyOtpResponseDTO {
     tutorData?: ITutor;
     accessToken?: string;
     refreshToken?: string;
-    _id?: string;
+    tutorId?: string;
 }
 
 // DTO for resending OTP response
@@ -121,3 +121,11 @@ export interface UploadPdfDTO {
     s3Url?: string;
   }
 
+  export interface AddRegistrationDetailsRequest {
+    tutorId: string;
+    bio: string;
+    expertise: string[];
+    qualifications: { qualification: string; certificate: string }[];
+    profilePicture: string;
+    cv: string;
+}

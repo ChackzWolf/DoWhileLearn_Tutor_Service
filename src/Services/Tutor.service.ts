@@ -24,7 +24,8 @@ import {UploadImageDTO,
     ResendOtpResponseDTO,
     BlockUnblockRequestDTO,
     UploadPdfDTO,
-    UploadPdfResponseDTO
+    UploadPdfResponseDTO,
+    AddRegistrationDetailsRequest
     } from '../Interfaces/DTOs/IService.dto'
 dotenv.config();
 
@@ -96,7 +97,7 @@ export class TutorService implements ITutorUseCase{
     
             console.log( createTutor, 'create tutorrr')
             const {accessToken, refreshToken} = createToken(createTutor,'TUTOR');
-            return { success: true, message: "Tutor has been registered.", tutorData: createTutor, accessToken, refreshToken, _id };
+            return { success: true, message: "Tutor has been registered.", tutorData: createTutor, accessToken, refreshToken, tutorId:_id };
     
         } catch (err) { 
             console.error("Error in VerifyOtp:", err);
@@ -138,7 +139,7 @@ export class TutorService implements ITutorUseCase{
                     const tutorId = tutorData._id;
                     const isBlocked = await repository.isBlocked(tutorId)
                     if(isBlocked){
-                        return {success: false, message : 'isBlocked'}
+                        return {success: false, message : 'isBlocked'} 
                     }
                     console.log(tutorData,'kkkkkkkkk') 
                     const _id = tutorData._id;
@@ -287,11 +288,12 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async addRegistrationDetails(data){
+    async addRegistrationDetails(data:AddRegistrationDetailsRequest){
         try {
             const response = await repository.addRegistrationDetails(data)
+            return response
         } catch (error) {
-            
+            return {success:false,message:'Error occured nthan aryila.'}
         }
     }
 } 

@@ -171,10 +171,10 @@ export class TutorController implements ITutorController {
         }
     }
     async updateRegistrationDetails(call:grpc.ServerUnaryCall<any,any>,callback:grpc.sendUnaryData<any>) {
-        console.log(call.request,'data');
+        console.log(call.request,'data from controller');
         const data = call.request;
         try {
-            const response = await tutorService.uploadPdf(data);
+            const response = await tutorService.addRegistrationDetails(data);
             console.log(response, 'response form controller');
             callback(null, response);
         } catch (error) {
@@ -183,3 +183,4 @@ export class TutorController implements ITutorController {
     }
 
 }
+ 

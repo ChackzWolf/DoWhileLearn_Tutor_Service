@@ -43,17 +43,19 @@ const TutorSchema: Schema<ITutor> = new Schema({
         type: String,
         required: true
     },
+    phoneNumber: {
+        type: String
+    },
     password: {
         type: String,
         required: true
-    },
+    }, 
     isblocked: {
         type: Boolean,
         default: false,
     },
     bio: {
         type: String,
-        required: true,
     },
     expertise: {
         type: [String], // An array of strings (repeated field)
