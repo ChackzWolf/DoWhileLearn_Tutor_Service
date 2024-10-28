@@ -92,10 +92,19 @@ export interface BlockUnblockRequestDTO {
 
 // DTO for adding a student to a tutor’s list
 export interface AddStudentRequestDTO {
-    tutorId: string;
     userId: string;
-    tutorShare: number;
-}
+    tutorId: string;
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string;
+    paymentStatus:boolean;
+    timestamp: Date;
+    status: string;
+  }
 
   // DTO for image upload
   export interface UploadImageDTO {

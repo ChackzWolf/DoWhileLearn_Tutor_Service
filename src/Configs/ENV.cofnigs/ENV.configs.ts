@@ -3,6 +3,9 @@ dotenv.config()
 
 
 export const configs = {
+    // LISTENER PORT
+    PORT : process.env.PORT || 3002,
+
     // GRPC PORT CONFIG
     TUTOR_GRPC_PORT : process.env.TUTOR_GRPC_PORT || 5002,
 
@@ -18,7 +21,7 @@ export const configs = {
     BUCKET_NAME: process.env.BUCKET_NAME || '',
     AWS_ACCESS_KEY_ID : process.env.AWS_ACCESS_KEY_ID || '',
     AWS_SECRET_ACCESS_KEY : process.env.AWS_SECRET_ACCESS_KEY || '',
-    AWS_REGION : process.env.AWS_REGION || '',
+    AWS_REGION : process.env.AWS_REGION || '', 
     
     //JWT CONFIGS
     JWT_SECRET : process.env.JWT_SECRET || '',

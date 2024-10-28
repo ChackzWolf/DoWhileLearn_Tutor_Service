@@ -74,9 +74,9 @@ server.addService(tutorProto.TutorService.service, {
     Login: controller.tutorLogin,
     FetchTutorData: controller.fetchTutors,
     ToggleBlock: controller.blockUnblock,
-    AddStudents: controller.addStudent,
     isBlocked: controller.isBlocked,
     SendOtpToEmail: controller.sendOtpToEmail ,
+    ResendOtpToEmail: controller.resendOtpToEmail,
     VerifyOTPResetPassword : controller.VerifyEnteredOTP,
     ResetPassword: controller.resetPassword,
     UploadImage: controller.uploadImage,
@@ -86,3 +86,14 @@ server.addService(tutorProto.TutorService.service, {
 
 grpcServer() 
 connectDB() 
+
+// Start Kafka consumer
+controller.start()
+  .catch(error => console.error('Failed to start kafka course service:', error));
+
+const PORT = configs.PORT; 
+app.listen(PORT, () => {
+  console.log(`Course service running on port ${PORT}`);
+});
+ 
+ 

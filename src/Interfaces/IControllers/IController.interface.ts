@@ -15,8 +15,14 @@ import {
     AddStudentRequestDTO,
     AddStudentResponseDTO
 } from '../DTOs/IController.dto';
+import { KafkaMessage } from "kafkajs";
+
 
 export interface ITutorController {
+    start(): Promise<void>;
+
+    handleMessage(message: KafkaMessage): Promise<void>;
+
     signup(call: grpc.ServerUnaryCall<TutorSignupRequestDTO, TutorSignupResponseDTO>, callback: grpc.sendUnaryData<TutorSignupResponseDTO>): Promise<void>;
 
     verifyOtp(call: grpc.ServerUnaryCall<TutorVerifyOtpRequestDTO, TutorVerifyOtpResponseDTO>, callback: grpc.sendUnaryData<TutorVerifyOtpResponseDTO>): Promise<void>
@@ -28,6 +34,4 @@ export interface ITutorController {
     blockUnblock(call: grpc.ServerUnaryCall<BlockUnblockRequestDTO, BlockUnblockResponseDTO>, callback: grpc.sendUnaryData<BlockUnblockResponseDTO>): Promise<void>;
 
     fetchTutors(_call: grpc.ServerUnaryCall<any, FetchTutorsResponseDTO>, callback: grpc.sendUnaryData<FetchTutorsResponseDTO>): Promise<void>;
-
-    addStudent(call: grpc.ServerUnaryCall<AddStudentRequestDTO, AddStudentResponseDTO>, callback: grpc.sendUnaryData<AddStudentResponseDTO>): Promise<void>
 }

@@ -20,10 +20,51 @@ import {
             PDFRequest,
             PDFResponse
         } from '../Interfaces/DTOs/IController.dto'; 
+import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.config";
+import { KafkaMessage } from "kafkajs";
+export interface OrderEventData {
+    userId: string;
+    tutorId: string;
+    courseId: string;
+    transactionId: string;
+    title: string;
+    thumbnail: string;
+    price: string;
+    adminShare: string; 
+    tutorShare: string;
+    paymentStatus:boolean;
+    timestamp: Date;
+    status: string;
+  }
+
 
 const tutorService = new TutorService();
 
 export class TutorController implements ITutorController {
+
+        async start(): Promise<void> {
+        await kafkaConfig.consumeMessages(
+          'order-service-group',
+          ['payment.success','transaction-failed'],
+          this.handleMessage.bind(this)
+        );
+      }
+
+    async handleMessage(message: KafkaMessage): Promise<void>  {
+        try {
+            const orderDetails: OrderEventData = JSON.parse(message.value?.toString() || '');
+            if(orderDetails.status == "SUCCESS"){
+                await tutorService.handleCoursePurchase(orderDetails);
+            }else{
+                await tutorService.handleOrderTransactionFail(orderDetails);
+            }
+        } catch (err) {
+            throw Error;
+        }
+    }
+
+
+
     async signup(call: grpc.ServerUnaryCall<TutorSignupRequestDTO, TutorSignupResponseDTO>, callback: grpc.sendUnaryData<TutorSignupResponseDTO>): Promise<void> {
         try {
             const tutorData = call.request;
@@ -84,15 +125,7 @@ export class TutorController implements ITutorController {
         }
     }
 
-    async addStudent(call: grpc.ServerUnaryCall<AddStudentRequestDTO, AddStudentResponseDTO>, callback: grpc.sendUnaryData<AddStudentResponseDTO>): Promise<void> {
-        try {
-            const data = call.request;
-            const response = await tutorService.addToSutdentList(data);
-            callback(null, response);
-        } catch (err) {
-            callback(err as grpc.ServiceError);
-        }
-    }
+
 
 
     async isBlocked(call:grpc.ServerUnaryCall<any, any>, callback:grpc.sendUnaryData<any>):Promise<void> {
@@ -182,5 +215,17 @@ export class TutorController implements ITutorController {
         }
     }
 
+    async resendOtpToEmail(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void> {
+        try {
+            console.log('trig to resend otp email send controller ', call.request);
+            const data = call.request;
+            const response = await tutorService.resendEmailOtp(data);
+            console.log('reseponse from controller', response);
+            callback(null, response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
+ 
 }
  

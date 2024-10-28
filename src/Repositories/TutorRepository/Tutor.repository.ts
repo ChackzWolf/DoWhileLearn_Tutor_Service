@@ -87,29 +87,56 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             return null
         }
     }
-    async addToSutdentList(userId: string, tutorId: string, tutorShare: number): Promise<AddToStudentListResponse> {
+    async addToSutdentList(userId: string, tutorId: string,courseId:string): Promise<AddToStudentListResponse> {
         try {
           // First, check if the course is already in the cart
             const tutor = await this.findById(tutorId);
             const userObjectId = new ObjectId(userId);
-            if(tutor){
-                if(!tutor.students.includes(userObjectId)){ 
-                  tutor.students.push(userObjectId);
-                  await tutor.save();
-                  return { message: 'Student added to Purchase List', success:true};
-                }else{
-                  return { message: 'Student already in purchase list', success:false};
-                }
-              }else{
-                return { message: 'Tutor not found.', success:false};
+            const courseObjectId = new ObjectId(courseId);
+            if (tutor) {
+              // Find the specific course by courseId within the tutor's courses array
+              const course = tutor.courses.find(c => new ObjectId(c._id as string).equals(courseObjectId));
+  
+              if (course) {
+                  // Check if the userId is already in the students array
+                  const isStudentAlreadyAdded = course.students.some(studentId => studentId.equals(userObjectId));
+  
+                  if (!isStudentAlreadyAdded) {
+                      // Add userId to the students array
+                      course.students.push(userObjectId);
+                      await tutor.save();
+  
+                      return { message: 'Student added to course student list', success: true };
+                  } else {
+                      return { message: 'Student already in course student list', success: false };
+                  }
+              } else {
+                  return { message: 'Course not found for this tutor.', success: false };
               }
-          
+          } else {
+              return { message: 'Tutor not found.', success: false };
+          }
         } catch (error) {
           console.error('Error toggling course in cart:', error);
           throw new Error('Failed to update cart');
         }
       }
-
+      async updateWallet(tutorId:string,tutorShare:number){
+        try {
+          const tutor = await this.findById(tutorId);
+          if(tutor){
+            tutor.wallet += tutorShare;
+            await tutor.save()
+            return { message: 'Student added to course student list', success: true };
+          }else{
+            console.log("tutor not found to update wallet.")
+            throw Error
+          }
+        } catch (error) {
+          console.error('Error updating wallet.')
+          throw Error
+        }
+      }
       async isBlocked(tutorId: string): Promise<boolean | undefined> {
         try {
           const tutor : ITutor | null= await this.findById(tutorId)
@@ -146,6 +173,7 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             );
     
             console.log(otpEntry, 'otpentry');
+            return otpEntry._id;
         } catch (error: unknown) {
             console.log(error);
         }
@@ -170,11 +198,29 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
         tutor.cv = cv;
     
         // Save the updated tutor profile
-        await tutor.save();
-        return { success: true, message: 'Tutor registration details updated successfully!' };
+        const savedTutor = await tutor.save();
+        return { success: true, message: 'Tutor registration details updated successfully!',tutorData: savedTutor };
 
       } 
-    
-};
+
+      async updateStoredOTP(otpId: string, otp: string) {
+        try {
+          const otpEntry = await Otp.findOneAndUpdate(
+            { _id:otpId }, // Find by otpId
+            { otp }, // Update the OTP and expiration time
+            { new: true, upsert: true } // Return updated doc, create if not exists
+          );
+          
+          if (!otpEntry) {
+            throw new Error('Failed to update or create OTP entry.');
+          }
+          
+          return otpEntry;
+        } catch (error) {
+          console.error('Error updating OTP entry:', error);
+          throw error; // Optionally rethrow the error for higher-level handling
+        }
+      }
+}; 
 
 export default tutorRepository
