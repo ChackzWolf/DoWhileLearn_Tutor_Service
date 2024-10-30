@@ -87,7 +87,7 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             return null
         }
     }
-    async addToSutdentList(userId: string, tutorId: string,courseId:string): Promise<AddToStudentListResponse> {
+    async addToSutdentList( tutorId: string,courseId:string, userId: string): Promise<AddToStudentListResponse> {
         try {
           // First, check if the course is already in the cart
             const tutor = await this.findById(tutorId);
@@ -121,12 +121,51 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
           throw new Error('Failed to update cart');
         }
       }
+
+      async removeFromStudentList( tutorId: string, courseId: string ,  userId: string): Promise<AddToStudentListResponse> {
+        try {
+            // Find the tutor by tutorId
+            const tutor = await this.findById(tutorId);
+            const userObjectId = new ObjectId(userId);
+            const courseObjectId = new ObjectId(courseId);
+    
+            if (tutor) {
+                // Find the specific course by courseId within the tutor's courses array
+                const course = tutor.courses.find(c => new ObjectId(c._id as string).equals(courseObjectId));
+    
+                if (course) {
+                    // Check if the userId is in the students array
+                    const isStudentPresent = course.students.some(studentId => studentId.equals(userObjectId));
+    
+                    if (isStudentPresent) {
+                        // Remove userId from the students array
+                        course.students = course.students.filter(studentId => !studentId.equals(userObjectId));
+                        await tutor.save();
+    
+                        return { message: 'Student removed from course student list', success: true };
+                    } else {
+                        return { message: 'Student not found in course student list', success: false };
+                    }
+                } else {
+                    return { message: 'Course not found for this tutor.', success: false };
+                }
+            } else {
+                return { message: 'Tutor not found.', success: false };
+            }
+        } catch (error) {
+            console.error('Error removing student from course:', error);
+            throw new Error('Failed to update student list');
+        }
+    }
       async updateWallet(tutorId:string,tutorShare:number){
         try {
           const tutor = await this.findById(tutorId);
           if(tutor){
             tutor.wallet += tutorShare;
-            await tutor.save()
+            const updatedTutor = await tutor.save()
+            if(!updatedTutor){
+              return { message: 'Student not saved student list', success: false };
+            }
             return { message: 'Student added to course student list', success: true };
           }else{
             console.log("tutor not found to update wallet.")

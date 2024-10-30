@@ -192,34 +192,49 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async handleCoursePurchase(paymentEvent: AddStudentRequestDTO): Promise<AddStudentResponseDTO | undefined> {
+    async handleCoursePurchase(paymentEvent: AddStudentRequestDTO): Promise<void> {
         try {
             console.log(paymentEvent)
-             const { tutorId, courseId, userId, tutorShare} = paymentEvent;
-             const moneyToAdd = parseInt(tutorShare);
+            const { tutorId, courseId, userId, tutorShare} = paymentEvent;
+            const moneyToAdd = parseInt(tutorShare);
             const updateStudentList = await repository.addToSutdentList(tutorId, courseId, userId);
             const updateWallet = await repository.updateWallet(tutorId, moneyToAdd);
             if(updateStudentList.success && updateWallet.success){
-                return {message:updateStudentList.message, success: true, status: StatusCode.Created}
+                await kafkaConfig.sendMessage('success.order.update', {
+                    success: true,
+                    service: 'TUTOR_SERVICE',
+                    transactionId: paymentEvent.transactionId
+                  });
             }else{
                 console.error('Error handle course purchase')
                 throw Error
             }
-        } catch (error) {
+        } catch (error:any) {
             console.error('Order creation failed:', error);
-          
-            const failureEvent: AddStudentRequestDTO = {
-              ...paymentEvent,
-              status: 'FAILED',
-              timestamp: new Date()
-            };
-      
-            await kafkaConfig.sendMessage('order-transaction-failed', failureEvent);
+            await kafkaConfig.sendMessage('transaction-failed', {
+                ...paymentEvent,
+                service: 'TUTOR_SERVICE',
+                status: 'FAILED',
+                error: error.message
+              });
         }
     }
 
     async handleOrderTransactionFail(failedTransactionEvent:AddStudentRequestDTO): Promise<void>{
-        console.log('triggered role back', failedTransactionEvent)
+        console.log(failedTransactionEvent)
+        const { tutorId, courseId, userId, tutorShare} = failedTransactionEvent;
+        const moneyToDeduct = parseInt(tutorShare);
+        const updateStudentList = await repository.removeFromStudentList(tutorId, courseId, userId);
+        const updateWallet = await repository.updateWallet(tutorId, moneyToDeduct*-1);
+        if(updateStudentList.success && updateWallet.success){
+            await kafkaConfig.sendMessage('rollback-completed', {
+                transactionId: failedTransactionEvent.transactionId,
+                service: 'TUTOR_SERVICE'
+              });
+        }else{
+            console.error('rollback failed course purchase')
+            throw Error
+        }
       }
 
     async checkIsBlocked(data: {tutorId:string}): Promise<{isBlocked:boolean | undefined}> {

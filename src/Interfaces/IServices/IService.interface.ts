@@ -28,6 +28,6 @@ export interface ITutorUseCase {
 
   blockUnblock(data: BlockUnblockRequestDTO): Promise<BlockUnblockResponseDTO>;
 
-  handleCoursePurchase (data: AddStudentRequestDTO):Promise<AddStudentResponseDTO | undefined>
+  handleCoursePurchase (paymentEvent: AddStudentRequestDTO): Promise<void>
 }
 

@@ -42,27 +42,58 @@ const tutorService = new TutorService();
 
 export class TutorController implements ITutorController {
 
-        async start(): Promise<void> {
+    async start(): Promise<void> {
+        const topics =          [
+          'order.process',
+          'order.rollback'
+        ]
+
         await kafkaConfig.consumeMessages(
-          'order-service-group',
-          ['payment.success','transaction-failed'],
-          this.handleMessage.bind(this)
+          'tutor-service-group',
+          topics,
+          this.routeMessage.bind(this)
         );
+      }
+
+
+        
+      async routeMessage(topics:string[], message:KafkaMessage, topic:string):Promise<void>{
+        try {
+          switch (topic) {
+            case 'order.process':
+                await this.handleMessage(message);
+                break;
+            case 'order.rollback':
+                await this.handleRollback(message);
+                break;
+            default:
+                console.warn(`Unhandled topic: ${topic}`);
+        }
+        } catch (error) {
+          
+        }
       }
 
     async handleMessage(message: KafkaMessage): Promise<void>  {
         try {
             const orderDetails: OrderEventData = JSON.parse(message.value?.toString() || '');
-            if(orderDetails.status == "SUCCESS"){
-                await tutorService.handleCoursePurchase(orderDetails);
-            }else{
-                await tutorService.handleOrderTransactionFail(orderDetails);
-            }
+            console.log(orderDetails, 'purchase has been triggered')
+            await tutorService.handleCoursePurchase(orderDetails);
+        } catch (err) {
+            throw new Error("Error from controller.");
+        }
+    }
+    
+    async handleRollback(message: KafkaMessage): Promise<void>  {
+        try {
+            const orderDetails: OrderEventData = JSON.parse(message.value?.toString() || '');
+            console.log(orderDetails, 'Rollback has been triggered.')
+            await tutorService.handleOrderTransactionFail(orderDetails);
         } catch (err) {
             throw Error;
         }
     }
-
+ 
 
 
     async signup(call: grpc.ServerUnaryCall<TutorSignupRequestDTO, TutorSignupResponseDTO>, callback: grpc.sendUnaryData<TutorSignupResponseDTO>): Promise<void> {
