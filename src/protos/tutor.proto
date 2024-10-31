@@ -15,8 +15,18 @@ service TutorService {
     rpc UploadImage(ImageRequest) returns (ImageResponse);
     rpc UploadPDF(PDFRequest) returns (PDFResponse);
     rpc RegistrationDetails(RegistrationDetailsRequest) returns (RegistrationDetailsResponse);
+    rpc FetchTutorTutor(FetchTutorDetailsRequest) returns (FetchCourseDetailsResponse);
 }
 
+message FetchTutorDetailsRequest {
+    string tutorId = 1;
+}
+
+message FetchTutorDetailsResponse {
+  tutorData tutorData = 1;
+  bool success = 2;
+  int32 status = 3;
+}
 
 message ResendOtpEmail {
     string otpId = 1;

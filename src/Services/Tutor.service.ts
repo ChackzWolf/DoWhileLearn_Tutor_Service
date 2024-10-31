@@ -353,4 +353,15 @@ export class TutorService implements ITutorUseCase{
             return {success:false,message:'Error occured nthan aryila.'}
         }
     }
+
+    async fetchTutorDetails(data:{tutorId:string}):Promise<{success:boolean, status:number,tutorData?:ITutor}>{
+        try {
+            const tutorId = data.tutorId;
+            const response = await repository.getTutorDetails(tutorId);
+            
+            return response
+        } catch (error) {
+            return {success:false, status:StatusCode.Conflict}
+        }
+    }
 } 

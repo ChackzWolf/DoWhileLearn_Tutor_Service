@@ -257,6 +257,18 @@ export class TutorController implements ITutorController {
             callback(error as grpc.ServiceError);
         }
     }
+
+    async fetchTutorDetails(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void>{
+        try {
+            console.log('triggerd fetching tutor details.');
+            const data = call.request;
+            const response = await tutorService.fetchTutorDetails(data);
+            console.log('response from controller', response);
+            callback(null, response);
+        } catch (error) {
+            throw new Error ("error from controller")
+        }
+    }
  
 }
  

@@ -260,6 +260,14 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
           throw error; // Optionally rethrow the error for higher-level handling
         }
       }
+
+      async getTutorDetails(tutorId:string):Promise<{success:boolean, status:number, tutorData?:ITutor}>{
+        const tutor = await this.findById(tutorId)
+        if(tutor){
+          return {success:true, status:StatusCode.Found, tutorData :tutor}
+        }
+        return {success:false, status:StatusCode.NotFound}
+      }
 }; 
 
 export default tutorRepository
