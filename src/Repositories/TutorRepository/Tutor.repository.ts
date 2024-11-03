@@ -268,6 +268,12 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
         }
         return {success:false, status:StatusCode.NotFound}
       }
+
+      // async updateTutorDetails(datatoUpdate:string):Promise<{success:boolean, status:number, message:string}>{
+      //   const tutor = await this.findById(datatoUpdate);
+        
+      //   tutor.bio = 
+      // }
 }; 
 
 export default tutorRepository

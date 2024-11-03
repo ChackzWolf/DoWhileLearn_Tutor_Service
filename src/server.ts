@@ -82,7 +82,8 @@ server.addService(tutorProto.TutorService.service, {
     UploadImage: controller.uploadImage,
     UploadPDF: controller.uploadPDF,
     RegistrationDetails: controller.updateRegistrationDetails,
-    FetchTutorTutor: controller.fetchTutorDetails,
+    FetchTutorDetails: controller.fetchTutorDetails,
+    UpdateTutorDetails: controller.updateTutorDetails,
 })
 
 grpcServer() 

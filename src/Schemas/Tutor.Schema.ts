@@ -44,12 +44,12 @@ const TutorSchema: Schema<ITutor> = new Schema({
         required: true
     },
     phoneNumber: {
-        type: String
+        type: String 
     },
     password: {
         type: String,
         required: true
-    }, 
+    },  
     isblocked: {
         type: Boolean,
         default: false,

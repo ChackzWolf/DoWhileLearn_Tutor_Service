@@ -357,11 +357,21 @@ export class TutorService implements ITutorUseCase{
     async fetchTutorDetails(data:{tutorId:string}):Promise<{success:boolean, status:number,tutorData?:ITutor}>{
         try {
             const tutorId = data.tutorId;
+            console.log('fetch tutoro details from service ', tutorId)
             const response = await repository.getTutorDetails(tutorId);
             
             return response
         } catch (error) {
             return {success:false, status:StatusCode.Conflict}
+        }
+    }
+
+    async updateTutorDetails(data:{formData:ITutor}):Promise<{success:boolean, status:number, message:string}>{
+        try {
+            const datatoUpdate = data.formData;
+            console.log()
+        } catch (error) {
+            
         }
     }
 } 

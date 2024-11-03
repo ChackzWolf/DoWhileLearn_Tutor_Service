@@ -45,7 +45,7 @@ export class TutorController implements ITutorController {
     async start(): Promise<void> {
         const topics =          [
           'order.process',
-          'order.rollback'
+          'tutor_service.rollback'
         ]
 
         await kafkaConfig.consumeMessages(
@@ -63,15 +63,15 @@ export class TutorController implements ITutorController {
             case 'order.process':
                 await this.handleMessage(message);
                 break;
-            case 'order.rollback':
-                await this.handleRollback(message);
+            case 'tutor_service.rollback':
+                await this.handleRollback(message); 
                 break;
             default:
                 console.warn(`Unhandled topic: ${topic}`);
         }
-        } catch (error) {
+        } catch (error) { 
           
-        }
+        } 
       }
 
     async handleMessage(message: KafkaMessage): Promise<void>  {
@@ -254,8 +254,8 @@ export class TutorController implements ITutorController {
             console.log('reseponse from controller', response);
             callback(null, response);
         } catch (error) {
-            callback(error as grpc.ServiceError);
-        }
+            callback(error as grpc.ServiceError); 
+        } 
     }
 
     async fetchTutorDetails(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void>{
@@ -267,6 +267,18 @@ export class TutorController implements ITutorController {
             callback(null, response);
         } catch (error) {
             throw new Error ("error from controller")
+        }
+    }
+
+    async updateTutorDetails(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void>{
+        try {
+            console.log('triggered tutor details update.')
+            const data = call.request;
+            const response = await tutorService.updateTutorDetails(data);
+            console.log(response, "response from controller.");
+            callback(null, response);
+        } catch (error) {
+            
         }
     }
  

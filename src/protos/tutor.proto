@@ -15,7 +15,18 @@ service TutorService {
     rpc UploadImage(ImageRequest) returns (ImageResponse);
     rpc UploadPDF(PDFRequest) returns (PDFResponse);
     rpc RegistrationDetails(RegistrationDetailsRequest) returns (RegistrationDetailsResponse);
-    rpc FetchTutorTutor(FetchTutorDetailsRequest) returns (FetchCourseDetailsResponse);
+    rpc FetchTutorDetails(FetchTutorDetailsRequest) returns (FetchTutorDetailsResponse);
+    rpc UpdateTutorDetails(UpdateTutorDetailsRequest) returns(UpdateTutorDetailsResponse);
+}
+
+message UpdateTutorDetailsRequest {
+    tutorData formData = 1;
+}
+
+message UpdateTutorDetailsResponse {
+    string message = 1;
+    bool success = 2;
+    int32 status = 3;
 }
 
 message FetchTutorDetailsRequest {
@@ -205,4 +216,5 @@ message tutorData{
     string profilePicture = 10;
     string cv = 11;
     string tutorId = 12;
+    string phoneNumber = 13;
 }

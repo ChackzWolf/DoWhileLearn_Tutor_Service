@@ -61,6 +61,7 @@ export interface TutorSignupRequestDTO {
     lastName: string;
     email: string;
     password: string;
+    phoneNumber: string;
 }
 
 // Interface for verify OTP request
