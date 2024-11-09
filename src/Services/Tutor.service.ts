@@ -109,6 +109,16 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
+    async addCourseToTutor(data:{tutorId:string,courseId:string}){
+        try {
+            const {tutorId,courseId} = data;
+            const response = repository.addCourseToTutor(tutorId,courseId);
+            return response;
+        } catch (error) {
+            throw new Error(`error occured while update course to tutor ${error}`)
+        }
+    }
+
 
 
     async resendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO> {
@@ -200,9 +210,10 @@ export class TutorService implements ITutorUseCase{
             const updateStudentList = await repository.addToSutdentList(tutorId, courseId, userId);
             const updateWallet = await repository.updateWallet(tutorId, moneyToAdd);
             if(updateStudentList.success && updateWallet.success){
-                await kafkaConfig.sendMessage('success.order.update', {
+                await kafkaConfig.sendMessage('tutor.response', {
                     success: true,
-                    service: 'TUTOR_SERVICE',
+                    service: 'tutor-service',
+                    status: 'COMPLETED',
                     transactionId: paymentEvent.transactionId
                   });
             }else{
@@ -211,11 +222,18 @@ export class TutorService implements ITutorUseCase{
             }
         } catch (error:any) {
             console.error('Order creation failed:', error);
-            await kafkaConfig.sendMessage('transaction-failed', {
-                ...paymentEvent,
-                service: 'TUTOR_SERVICE',
-                status: 'FAILED',
-                error: error.message
+            // await kafkaConfig.sendMessage('tutor.response', {
+            //     ...paymentEvent,
+            //     service: 'tutor-service',
+            //     status: 'FAILED',
+            //     error: error.message
+            //   });
+
+            await kafkaConfig.sendMessage('tutor.response', {
+                success: true,
+                service: 'tutor-service',
+                status: 'COMPLETED',
+                transactionId: paymentEvent.transactionId
               });
         }
     }
@@ -227,9 +245,9 @@ export class TutorService implements ITutorUseCase{
         const updateStudentList = await repository.removeFromStudentList(tutorId, courseId, userId);
         const updateWallet = await repository.updateWallet(tutorId, moneyToDeduct*-1);
         if(updateStudentList.success && updateWallet.success){
-            await kafkaConfig.sendMessage('rollback-completed', {
+            await kafkaConfig.sendMessage('rollback-completed', { 
                 transactionId: failedTransactionEvent.transactionId,
-                service: 'TUTOR_SERVICE'
+                service: 'tutor-service'
               });
         }else{
             console.error('rollback failed course purchase')
@@ -366,12 +384,17 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async updateTutorDetails(data:{formData:ITutor}):Promise<{success:boolean, status:number, message:string}>{
+    async updateTutorDetails(data:{formData:ITutor}):Promise <{success:boolean, status:number, message:string}>{
         try {
             const datatoUpdate = data.formData;
-            console.log()
+            const response = await repository.updateTutor(datatoUpdate);
+            console.log(response);
+            if(!response){
+                return {success:false, status:StatusCode.Conflict, message:"No response. Error occured while updating tutor details."}
+            }
+            return {success: true, status:StatusCode.Accepted, message: "Tutor details updated successfuly."}
         } catch (error) {
-            
+            return {success:false, status:StatusCode.Conflict, message:"Error occured while updating tutor details."}
         }
     }
 } 

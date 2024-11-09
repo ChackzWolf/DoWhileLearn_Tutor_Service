@@ -9,7 +9,7 @@ export interface IQualification {
 
 // Interface for the course document
 export interface ICourses extends Document {
-    course: string;
+    course: Types.ObjectId;
     students: Types.ObjectId[]; // Array of student ObjectIds
 }
 
@@ -30,6 +30,7 @@ export interface ITutor extends Document {
     courses: ICourses[]
     students: mongoose.Types.ObjectId[]; // Array of student ObjectIds
     wallet: number;
+    tutorId?:string
     
     // Methods
     comparePassword: (password: string) => Promise<boolean>; // Password comparison

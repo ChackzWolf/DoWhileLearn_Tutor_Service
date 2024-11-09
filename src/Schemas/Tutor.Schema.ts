@@ -18,14 +18,15 @@ const QualificationSchema: Schema<IQualification> = new Schema({
 
 const Courses: Schema<ICourses> = new Schema({
     course: {
-        type: String,
-        required: true,
+      type: Schema.Types.ObjectId,  
+      ref: 'Course',  
+      required: true,
     },
     students: [{
-        type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
+      ref: 'User',
     }],
-});
-
+  });
 
 
 

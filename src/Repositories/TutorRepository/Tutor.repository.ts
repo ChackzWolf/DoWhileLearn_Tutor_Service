@@ -6,6 +6,7 @@ import { AddToStudentListResponse, BlockUnblockTutorResponse, AddRegistrationDet
 import { BaseRepository } from "../BaseRepository/Base.Repository";
 import { ObjectId } from "mongodb";
 import { StatusCode } from "../../Interfaces/Enums/Enums";
+import mongoose from "mongoose";
 
 
 dotenv.config();
@@ -61,6 +62,33 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             return null;
         }
     }
+
+    async addCourseToTutor(tutorId: string, courseId: string) {
+      try {
+        const validCourseId = new mongoose.Types.ObjectId(courseId); // Ensure courseId is an ObjectId
+    
+        // Use the `findByIdAndUpdate` method with `$addToSet` operator
+        const updatedTutor = await TutorModel.findByIdAndUpdate(
+          tutorId,
+          {
+            $addToSet: { courses: { course: validCourseId, students: [] } } // Avoids duplicates and adds course
+          },
+          { new: true, upsert: true } // Returns updated document
+        );
+        
+        if (!updatedTutor) {
+          return { success: false, status: StatusCode.Conflict };
+        }
+    
+        console.log('Course added successfully:', updatedTutor);
+        return { success: true, status: StatusCode.Created };
+      } catch (error) {
+        console.error('Error adding course:', error);
+        throw error;
+      } 
+    }
+
+
     async blockUnblock(tutorId: string): Promise<BlockUnblockTutorResponse> {
         try{
             const user = await this.findById(tutorId)
@@ -269,11 +297,37 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
         return {success:false, status:StatusCode.NotFound}
       }
 
-      // async updateTutorDetails(datatoUpdate:string):Promise<{success:boolean, status:number, message:string}>{
-      //   const tutor = await this.findById(datatoUpdate);
-        
-      //   tutor.bio = 
-      // }
+      async updateTutor( dataToUpdate: Partial<ITutor>) {
+        try {
+            const updatedTutor = await TutorModel.findByIdAndUpdate(
+                dataToUpdate.tutorId,
+                {
+                    $set: {
+                        firstName: dataToUpdate.firstName,
+                        lastName: dataToUpdate.lastName,
+                        email: dataToUpdate.email,
+                        phoneNumber: dataToUpdate.phoneNumber,
+                        bio: dataToUpdate.bio,
+                        expertise: dataToUpdate.expertise,
+                        qualifications: dataToUpdate.qualifications,
+                        profilePicture: dataToUpdate.profilePicture,
+                        cv: dataToUpdate.cv,
+                        wallet: dataToUpdate.wallet,
+                    },
+                },
+                { new: true, runValidators: true } // Returns updated document & applies schema validations
+            );
+    
+            if (!updatedTutor) {
+                throw new Error('Tutor not found');
+            }
+    
+            return updatedTutor;
+        } catch (error) {
+            console.error("Error updating tutor:", error);
+            throw error;
+        }
+    }
 }; 
 
 export default tutorRepository

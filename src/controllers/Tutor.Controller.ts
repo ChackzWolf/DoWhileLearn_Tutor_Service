@@ -44,8 +44,8 @@ export class TutorController implements ITutorController {
 
     async start(): Promise<void> {
         const topics =          [
-          'order.process',
-          'tutor_service.rollback'
+          'tutor.update',
+          'tutor-service.rollback'
         ]
 
         await kafkaConfig.consumeMessages(
@@ -60,14 +60,15 @@ export class TutorController implements ITutorController {
       async routeMessage(topics:string[], message:KafkaMessage, topic:string):Promise<void>{
         try {
           switch (topic) {
-            case 'order.process':
+            case 'tutor.update':
                 await this.handleMessage(message);
                 break;
-            case 'tutor_service.rollback':
+            case 'tutor-service.rollback':
                 await this.handleRollback(message); 
                 break;
             default:
                 console.warn(`Unhandled topic: ${topic}`);
+
         }
         } catch (error) { 
           
@@ -134,6 +135,18 @@ export class TutorController implements ITutorController {
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
+        }
+    }
+
+    async addCourseToTutor (call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>):Promise<void>{
+        try {
+            console.log('add course to tutor triggered !',call.request);
+            const data = call.request;
+            const response = await tutorService.addCourseToTutor(data);
+            console.log(response,'response form tutor !');
+            callback(null, response)
+        } catch (error) {
+            callback(error as grpc.ServiceError);
         }
     }
 

@@ -6,6 +6,7 @@ service TutorService {
     rpc VerifyOTP(OTPRequest) returns (OTPResponse);
     rpc ResendOTP(OTPRequest) returns (OTPResponse);
     rpc FetchTutorData(EmptyRequest) returns (ResponseAllTutors);
+    rpc AddCourseToTutor(AddCourseToTutorRequest) returns (AddCourseToTutorResponse);
     rpc ToggleBlock (ToggleBlockRequest) returns (ToggleBlockResponse);
     rpc isBlocked (TutorIdRequest) returns (BlockedStatusResponse);
     rpc SendOtpToEmail (SendOtpEmail) returns (SendOtpResponse);
@@ -17,6 +18,15 @@ service TutorService {
     rpc RegistrationDetails(RegistrationDetailsRequest) returns (RegistrationDetailsResponse);
     rpc FetchTutorDetails(FetchTutorDetailsRequest) returns (FetchTutorDetailsResponse);
     rpc UpdateTutorDetails(UpdateTutorDetailsRequest) returns(UpdateTutorDetailsResponse);
+}
+message AddCourseToTutorRequest {
+    string tutorId = 1;
+    string courseId = 2;
+}
+
+message AddCourseToTutorResponse {
+    bool success = 1;
+    int32 status = 2;
 }
 
 message UpdateTutorDetailsRequest {
@@ -39,6 +49,13 @@ message FetchTutorDetailsResponse {
   int32 status = 3;
 }
 
+message VerifyOTPResetPasswordRequest {
+    string email = 1;
+    string otpId = 2;
+    string enteredOTP = 3;
+}
+
+
 message ResendOtpEmail {
     string otpId = 1;
     string email = 2;
@@ -48,12 +65,12 @@ message ResendOtpResponse {
     int32 status = 2;
     string message = 3;
 }
-
 message RegistrationDetailsResponse {
     bool success = 1;
     int32 status = 2;
     string message =3;
     tutorData tutorData = 4;
+
 }
 message Qualification {
   string qualification = 1;
@@ -68,6 +85,7 @@ message RegistrationDetailsRequest {
   string cv = 5;
   string tutorId = 6;
 }
+
 message PDFRequest {
   bytes pdfBinary = 1;
   string pdfName = 2;
@@ -101,7 +119,6 @@ message ResetPasswordResponse{
 
 message SendOtpEmail {
     string email = 1;
-
 }
 
 message SendOtpResponse {
@@ -111,7 +128,6 @@ message SendOtpResponse {
     string email = 4;
     string tutorId = 5;
     string otpId = 6;
-
 }
 
 message TutorIdRequest {
@@ -165,12 +181,6 @@ message RegisterResponse {
     string msg = 3;
     string email = 4;
     int32 status = 5;
-}
-
-message VerifyOTPResetPasswordRequest {
-    string email = 1;
-    string otpId = 2;
-    string enteredOTP = 3;
 }
 
 message OTPRequest {
