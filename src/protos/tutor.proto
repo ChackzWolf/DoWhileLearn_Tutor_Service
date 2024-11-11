@@ -227,4 +227,10 @@ message tutorData{
     string cv = 11;
     string tutorId = 12;
     string phoneNumber = 13;
+    repeated courses courses = 14;
+}
+
+message courses {
+    string course = 1;
+    repeated string students = 2;
 }

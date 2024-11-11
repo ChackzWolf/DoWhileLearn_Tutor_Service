@@ -208,8 +208,11 @@ export class TutorService implements ITutorUseCase{
             const { tutorId, courseId, userId, tutorShare} = paymentEvent;
             const moneyToAdd = parseInt(tutorShare);
             const updateStudentList = await repository.addToSutdentList(tutorId, courseId, userId);
-            const updateWallet = await repository.updateWallet(tutorId, moneyToAdd);
-            if(updateStudentList.success && updateWallet.success){
+            if(updateStudentList.message !== 'Exists'){
+                await repository.updateWallet(tutorId, moneyToAdd);
+            }
+
+            if(updateStudentList.success){
                 await kafkaConfig.sendMessage('tutor.response', {
                     success: true,
                     service: 'tutor-service',
@@ -222,19 +225,19 @@ export class TutorService implements ITutorUseCase{
             }
         } catch (error:any) {
             console.error('Order creation failed:', error);
-            // await kafkaConfig.sendMessage('tutor.response', {
-            //     ...paymentEvent,
-            //     service: 'tutor-service',
-            //     status: 'FAILED',
-            //     error: error.message
-            //   });
-
             await kafkaConfig.sendMessage('tutor.response', {
-                success: true,
+                ...paymentEvent,
                 service: 'tutor-service',
-                status: 'COMPLETED',
-                transactionId: paymentEvent.transactionId
+                status: 'FAILED',
+                error: error.message
               });
+
+            // await kafkaConfig.sendMessage('tutor.response', {
+            //     success: true,
+            //     service: 'tutor-service',
+            //     status: 'COMPLETED',
+            //     transactionId: paymentEvent.transactionId
+            //   });
         }
     }
 

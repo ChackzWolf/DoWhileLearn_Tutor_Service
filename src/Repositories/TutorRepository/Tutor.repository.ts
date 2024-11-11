@@ -122,21 +122,25 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             const userObjectId = new ObjectId(userId);
             const courseObjectId = new ObjectId(courseId);
             if (tutor) {
+              console.log('tutor found, ', tutor);
               // Find the specific course by courseId within the tutor's courses array
-              const course = tutor.courses.find(c => new ObjectId(c._id as string).equals(courseObjectId));
+              const course = tutor.courses.find(c => c.course.toString() === courseObjectId.toString());
   
               if (course) {
+                console.log('course found, ' , course)
                   // Check if the userId is already in the students array
                   const isStudentAlreadyAdded = course.students.some(studentId => studentId.equals(userObjectId));
   
                   if (!isStudentAlreadyAdded) {
+                    console.log('student is adding')
                       // Add userId to the students array
                       course.students.push(userObjectId);
-                      await tutor.save();
-  
+                      const savedTutor = await tutor.save();
+                      console.log(savedTutor, 'saved tutor');
                       return { message: 'Student added to course student list', success: true };
                   } else {
-                      return { message: 'Student already in course student list', success: false };
+                    console.log('already exist')
+                      return { message: 'Exists', success: true };
                   }
               } else {
                   return { message: 'Course not found for this tutor.', success: false };
@@ -145,7 +149,7 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
               return { message: 'Tutor not found.', success: false };
           }
         } catch (error) {
-          console.error('Error toggling course in cart:', error);
+          console.error('Error repo adding students:', error);
           throw new Error('Failed to update cart');
         }
       }

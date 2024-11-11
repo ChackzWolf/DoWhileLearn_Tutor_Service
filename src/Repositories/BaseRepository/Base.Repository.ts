@@ -1,4 +1,4 @@
-import { Model, Document, FilterQuery, UpdateQuery } from "mongoose";
+import { Model, Document, FilterQuery, UpdateQuery  } from "mongoose";
 
 // BaseRepository is a generic class to perform CRUD operations
 export class BaseRepository<T extends Document> {
@@ -12,7 +12,8 @@ export class BaseRepository<T extends Document> {
     async create(data: Partial<T>): Promise<T> {
         try {
             const doc = new this.model(data);
-            return await doc.save();
+            const savedDoc = await doc.save();
+            return savedDoc as T; // Type assertion to resolve the type mismatch
         } catch (error) {
             throw new Error(`Error creating document: ${error}`);
         }

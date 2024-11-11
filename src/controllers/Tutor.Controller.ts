@@ -128,7 +128,7 @@ export class TutorController implements ITutorController {
     }
 
     async tutorLogin(call: grpc.ServerUnaryCall<TutorLoginRequestDTO, TutorLoginResponseDTO>, callback: grpc.sendUnaryData<TutorLoginResponseDTO>): Promise<void> {
-        try {
+        try { 
             const data = call.request;
             const response = await tutorService.tutorLogin(data);
             console.log(response)
@@ -136,7 +136,7 @@ export class TutorController implements ITutorController {
         } catch (err) {
             callback(err as grpc.ServiceError);
         }
-    }
+    }  
 
     async addCourseToTutor (call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>):Promise<void>{
         try {
@@ -148,7 +148,7 @@ export class TutorController implements ITutorController {
         } catch (error) {
             callback(error as grpc.ServiceError);
         }
-    }
+    } 
 
     async blockUnblock(call: grpc.ServerUnaryCall<BlockUnblockRequestDTO, BlockUnblockResponseDTO>, callback: grpc.sendUnaryData<BlockUnblockResponseDTO>): Promise<void> {
         try {
@@ -281,7 +281,7 @@ export class TutorController implements ITutorController {
         } catch (error) {
             throw new Error ("error from controller")
         }
-    }
+    } 
 
     async updateTutorDetails(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void>{
         try {
