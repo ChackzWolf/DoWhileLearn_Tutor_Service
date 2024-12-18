@@ -85,6 +85,7 @@ server.addService(tutorProto.TutorService.service, {
     FetchTutorDetails: controller.fetchTutorDetails,
     UpdateTutorDetails: controller.updateTutorDetails,
     AddCourseToTutor: controller.addCourseToTutor,
+    FetchTutorStudents: controller.fetchStudentIds
 })
 
 grpcServer() 

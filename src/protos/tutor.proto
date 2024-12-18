@@ -18,7 +18,18 @@ service TutorService {
     rpc RegistrationDetails(RegistrationDetailsRequest) returns (RegistrationDetailsResponse);
     rpc FetchTutorDetails(FetchTutorDetailsRequest) returns (FetchTutorDetailsResponse);
     rpc UpdateTutorDetails(UpdateTutorDetailsRequest) returns(UpdateTutorDetailsResponse);
+    rpc FetchTutorStudents(FetchStudentsRequest) returns(FetchStudentsResponse);
 }
+
+message FetchStudentsRequest {
+    string tutorId  = 1;
+}
+message FetchStudentsResponse {
+  bool success = 1;               
+  repeated string studentIds = 2; 
+  string message = 3;             
+}
+
 message AddCourseToTutorRequest {
     string tutorId = 1;
     string courseId = 2;

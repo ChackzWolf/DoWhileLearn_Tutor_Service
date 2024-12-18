@@ -400,4 +400,14 @@ export class TutorService implements ITutorUseCase{
             return {success:false, status:StatusCode.Conflict, message:"Error occured while updating tutor details."}
         }
     }
+
+    async fetchAllStudentIds( data: {tutorId:string}){
+        try {
+            const tutorId = data.tutorId;
+            const response = await repository.getAllStudentIds(tutorId);
+            return response;
+        } catch (error) {
+            return {success:false, status:StatusCode.Conflict, message:"Error occured while fetching student ids."}
+        }
+    }
 } 

@@ -332,6 +332,24 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
             throw error;
         }
     }
+
+    async getAllStudentIds (tutorId:string) {
+      try {
+        console.log(tutorId)
+        const tutor = await TutorModel.findById(tutorId)
+        console.log(tutor, 'tutor from repo')
+        if(!tutor){
+          return {success:false, message: 'tutor not found'}
+        }
+        const studentsSet = new Set<string>();
+        tutor.courses.forEach(course => {
+          course.students.forEach(studentId => studentsSet.add(studentId.toString()));
+        })
+        return {studentIds: Array.from(studentsSet), success:true, message: 'Student ids found'};
+      } catch (error) {
+        
+      }
+    }
 }; 
 
 export default tutorRepository
