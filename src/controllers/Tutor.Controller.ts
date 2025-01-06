@@ -285,7 +285,7 @@ export class TutorController implements ITutorController {
 
     async updateTutorDetails(call: grpc.ServerUnaryCall<any,any>, callback:grpc.sendUnaryData<any>): Promise<void>{
         try {
-            console.log('triggered tutor details update.')
+            console.log('triggered tutor details update.', call.request)
             const data = call.request;
             const response = await tutorService.updateTutorDetails(data);
             console.log(response, "response from controller.");

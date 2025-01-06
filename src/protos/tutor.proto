@@ -239,6 +239,7 @@ message tutorData{
     string tutorId = 12;
     string phoneNumber = 13;
     repeated courses courses = 14;
+    int32 wallet = 15;
 }
 
 message courses {

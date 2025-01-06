@@ -326,7 +326,7 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
                 throw new Error('Tutor not found');
             }
     
-            return updatedTutor;
+            return updatedTutor; 
         } catch (error) {
             console.error("Error updating tutor:", error);
             throw error;
@@ -347,7 +347,7 @@ class tutorRepository extends BaseRepository<ITutor> implements ITutorRepository
         })
         return {studentIds: Array.from(studentsSet), success:true, message: 'Student ids found'};
       } catch (error) {
-        
+         
       }
     }
 }; 
