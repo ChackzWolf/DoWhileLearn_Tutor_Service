@@ -2,12 +2,10 @@ import tutorRepository from "../Repositories/TutorRepository/Tutor.repository";
 import { ITutor , ITempTutor } from "../Interfaces/Models/ITutor";
 import  {TempTutor} from "../Schemas/Tutor.Schema";
 import dotenv from "dotenv"
-import { generateOTP } from "../Utils/Generate.OTP";
-import { SendVerificationMail } from "../Utils/Send.email";
 import createToken from "../Utils/Activation.token";
-import { ITutorUseCase } from "../Interfaces/IServices/IService.interface";
+import ITutorService from "../Interfaces/IServices/IService.interface";
 import { StatusCode } from "../Interfaces/Enums/Enums";
-import { uploadFile, uploadImage, uploadPDF } from "../Configs/S3.configs/S3.configs"
+import { uploadImage, uploadPDF } from "../Configs/S3.configs/S3.configs"
 import {UploadImageDTO,
     UploadImageResponseDTO,
     TutorLoginRequestDTO,
@@ -25,20 +23,79 @@ import {UploadImageDTO,
     BlockUnblockRequestDTO,
     UploadPdfDTO,
     UploadPdfResponseDTO,
-    AddRegistrationDetailsRequest
+    AddRegistrationDetailsRequest,
+    GoogleAuthRequestDTO,
+    GoogleAuthResponseDTO
     } from '../Interfaces/DTOs/IService.dto'
 dotenv.config();
 import {kafkaConfig} from "../Configs/Kafka.configs/Kafka.config"
-
-
-  // types/events.ts
+import {ObjectId} from "mongodb"
+import { ITutorRepository } from "../Interfaces/IRepositories/IRepository.interface";
+import { IEmailService } from "../Interfaces/IUtils/IEmailService";
+import { IOTPService } from "../Interfaces/IUtils/IOTPService";
+import { kafka_Const } from "../Configs/Kafka.configs/Topic.config";
 
 
 
 const repository = new tutorRepository()
  
 
-export class TutorService implements ITutorUseCase{
+export class TutorService implements ITutorService{
+
+    private tutorRepository : ITutorRepository;
+    private emailService: IEmailService;
+    private otpService: IOTPService;
+
+    constructor(tutorRepository: ITutorRepository, emailService: IEmailService, otpService: IOTPService) {
+        this.tutorRepository = tutorRepository;
+        this.emailService = emailService;
+        this.otpService = otpService;
+    }
+
+
+    async googleAuthentication(data: GoogleAuthRequestDTO): Promise<GoogleAuthResponseDTO>{
+        try {
+            const {email, firstName, lastName, photoUrl} = data;
+        console.log(data, ' dtaa from service')
+            const tutorData = await this.tutorRepository.findByEmail(email);
+            if(tutorData){
+                if(!tutorData.profilePicture) {
+                    const added = await this.tutorRepository.udpateTutorProfilePicture(tutorData._id,photoUrl);
+                    console.log(added,'updated profile pic')
+                    const {refreshToken, accessToken} = createToken(tutorData, "TUTOR")
+                    return {success:true, message: "Tutor login successful.", tutorData, refreshToken, accessToken, tutorId:tutorData._id, type:"SIGN_IN"}
+                }
+                const tutorId = tutorData._id;
+                const isBlocked = await this.tutorRepository.isBlocked(tutorId)
+                if(isBlocked){
+                    return {success: false, message:'isBlocked', type:"SIGN_IN"} 
+                }
+                console.log(tutorData,'kkkkkkkkk') 
+                const _id = tutorData._id;
+                const {refreshToken, accessToken} = createToken(tutorData, "TUTOR")
+
+                return {success:true, message: "Tutor login successful.", tutorData, refreshToken, accessToken, tutorId:_id, type:"SIGN_IN"}
+            }else{
+                const data = {
+                    email,
+                    firstName,
+                    lastName,
+                    password:"Jacks@123",
+                    profilePicture:photoUrl,
+                }
+                const createTutor: ITutor | null = await this.tutorRepository.createTutor(data);
+                if(createTutor){
+                    const {accessToken, refreshToken} = createToken(createTutor,'TUTOR');
+                    return { success: true, message: "Tutor has been registered.", tutorData: createTutor, accessToken, refreshToken, tutorId:createTutor?._id, type:"SIGN_UP"};
+                }else{
+                    throw new Error("Failed to create tutor.");
+                }
+            }
+        } catch (error) {
+            throw new Error(`Authentication failed: ${error}`);
+
+        }
+    }
     
     async tutorRegister(tutorData: TutorSignupRequestDTO): Promise<TutorSignupResponseDTO> {
         
@@ -48,20 +105,20 @@ export class TutorService implements ITutorUseCase{
             if(email === undefined){
                 throw new Error("Email is undefined");
             } 
-            const emailExists = await repository.findByEmail(email);
+            const emailExists = await this.tutorRepository.findByEmail(email);
             
             if(emailExists){
                 console.log('email exists triggered')
                 return {success: false, message: "Email already exists" };
             } 
 
-            let otp = generateOTP();
+            let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
-            await SendVerificationMail(email,otp)
+            await this.emailService.sendVerificationMail(email,otp)
   
             console.log('Email send')
 
-            const tempTutorData: ITempTutor | null = await repository.createTempTutor({
+            const tempTutorData: ITempTutor | null = await this.tutorRepository.createTempTutor({
                 otp,
                 tutorData: tutorData as ITutor, 
             });    
@@ -72,12 +129,12 @@ export class TutorService implements ITutorUseCase{
             } else {
                 throw new Error("Failed to create temporary tutor data.");
             }
- 
-
         }catch(err){
             throw new Error(`Failed to signup: ${err}`);
         } 
     }
+
+
 
     async verifyOtp(passedData: VerifyOtpRequestDTO): Promise<VerifyOtpResponseDTO> {
         try {
@@ -92,7 +149,7 @@ export class TutorService implements ITutorUseCase{
                 return { success: false, message: "Invalid OTP." };
             }
             
-            const createTutor: ITutor | null = await repository.createTutor(tempTutor.tutorData);
+            const createTutor: ITutor | null = await this.tutorRepository.createTutor(tempTutor.tutorData);
             const _id = createTutor?._id;
     
             if (!createTutor) {
@@ -109,10 +166,10 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async addCourseToTutor(data:{tutorId:string,courseId:string}){
+    async addCourseToTutor(data:{tutorId:string,courseId:string}):Promise<{success:boolean, status:number}>{
         try {
             const {tutorId,courseId} = data;
-            const response = repository.addCourseToTutor(tutorId,courseId);
+            const response = this.tutorRepository.addCourseToTutor(tutorId,courseId);
             return response;
         } catch (error) {
             throw new Error(`error occured while update course to tutor ${error}`)
@@ -121,21 +178,23 @@ export class TutorService implements ITutorUseCase{
 
 
 
+
+
     async resendOTP(passedData: ResendOtpRequestDTO): Promise<ResendOtpResponseDTO> {
         
         try{
             const {email,tempId} = passedData;
-            let newOTP = generateOTP();
+            let newOTP = this.otpService.generateOTP();
             console.log(` ressend OTP : [   ${newOTP}   ]`);
-
+            
             const updatedTempTutor = await TempTutor.findByIdAndUpdate(tempId,{otp:newOTP},{new:true})
-
+            
             if(!updatedTempTutor){
                 console.log('failed to send otp')
                 return { success: false, message: "Register time has expaired. Try registering again"}
             }else{
-                await SendVerificationMail(email,newOTP)
-
+                await this.emailService.sendVerificationMail(email,newOTP)
+            
                 return {success: true, message:"OTP has been resent"}; 
             } 
         }catch{
@@ -146,12 +205,12 @@ export class TutorService implements ITutorUseCase{
     async tutorLogin(loginData: TutorLoginRequestDTO): Promise<TutorLoginResponseDTO> {
         try {
             const {email, password} = loginData;
-            const tutorData = await repository.findByEmail(email);
+            const tutorData = await this.tutorRepository.findByEmail(email);
             if(tutorData){
                 const checkPassword = await tutorData.comparePassword(password)
                 if(checkPassword){
                     const tutorId = tutorData._id;
-                    const isBlocked = await repository.isBlocked(tutorId)
+                    const isBlocked = await this.tutorRepository.isBlocked(tutorId)
                     if(isBlocked){
                         return {success: false, message : 'isBlocked'} 
                     }
@@ -175,7 +234,7 @@ export class TutorService implements ITutorUseCase{
     async fetchTutors(): Promise<FetchTutorsResponseDTO> {
         
         try {
-            const tutors = await repository.getAllTutors();
+            const tutors = await this.tutorRepository.getAllTutors();
             console.log(tutors, 'students')
             if (tutors) {
                 return { success: true, tutors };
@@ -190,7 +249,7 @@ export class TutorService implements ITutorUseCase{
     async blockUnblock(data: BlockUnblockRequestDTO): Promise<BlockUnblockResponseDTO> {
         try{
             console.log(data.tutorId,'from use case')
-            const response = await repository.blockUnblock(data.tutorId);
+            const response = await this.tutorRepository.blockUnblock(data.tutorId);
             console.log(response)
             if(!response.success){
                 return {success:false, message:"Error finding tutor."}
@@ -207,13 +266,13 @@ export class TutorService implements ITutorUseCase{
             console.log(paymentEvent)
             const { tutorId, courseId, userId, tutorShare} = paymentEvent;
             const moneyToAdd = parseInt(tutorShare);
-            const updateStudentList = await repository.addToSutdentList(tutorId, courseId, userId);
+            const updateStudentList = await this.tutorRepository.addToSutdentList(tutorId, courseId, userId);
             if(updateStudentList.message !== 'Exists'){
-                await repository.updateWallet(tutorId, moneyToAdd);
+                await this.tutorRepository.updateWallet(tutorId, moneyToAdd);
             }
 
             if(updateStudentList.success){
-                await kafkaConfig.sendMessage('tutor.response', {
+                await kafkaConfig.sendMessage(kafka_Const.topics.TUTOR_RESPONSE, {
                     success: true,
                     service: 'tutor-service',
                     status: 'COMPLETED',
@@ -225,30 +284,23 @@ export class TutorService implements ITutorUseCase{
             }
         } catch (error:any) {
             console.error('Order creation failed:', error);
-            await kafkaConfig.sendMessage('tutor.response', {
+            await kafkaConfig.sendMessage(kafka_Const.topics.TUTOR_RESPONSE, {
                 ...paymentEvent,
                 service: 'tutor-service',
                 status: 'FAILED',
                 error: error.message
-              });
-
-            // await kafkaConfig.sendMessage('tutor.response', {
-            //     success: true,
-            //     service: 'tutor-service',
-            //     status: 'COMPLETED',
-            //     transactionId: paymentEvent.transactionId
-            //   });
-        }
+              });  
+        } 
     }
 
     async handleOrderTransactionFail(failedTransactionEvent:AddStudentRequestDTO): Promise<void>{
         console.log(failedTransactionEvent)
         const { tutorId, courseId, userId, tutorShare} = failedTransactionEvent;
         const moneyToDeduct = parseInt(tutorShare);
-        const updateStudentList = await repository.removeFromStudentList(tutorId, courseId, userId);
-        const updateWallet = await repository.updateWallet(tutorId, moneyToDeduct*-1);
+        const updateStudentList = await this.tutorRepository.removeFromStudentList(tutorId, courseId, userId);
+        const updateWallet = await this.tutorRepository.updateWallet(tutorId, moneyToDeduct*-1);
         if(updateStudentList.success && updateWallet.success){
-            await kafkaConfig.sendMessage('rollback-completed', { 
+            await kafkaConfig.sendMessage(kafka_Const.topics.TUTOR_ROLLBACK_COMPLETED, { 
                 transactionId: failedTransactionEvent.transactionId,
                 service: 'tutor-service'
               });
@@ -260,7 +312,7 @@ export class TutorService implements ITutorUseCase{
 
     async checkIsBlocked(data: {tutorId:string}): Promise<{isBlocked:boolean | undefined}> {
         try {
-            const response = await repository.isBlocked(data.tutorId);
+            const response = await this.tutorRepository.isBlocked(data.tutorId);
 
             return {isBlocked : response }
         } catch (error) {
@@ -268,29 +320,29 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async resetPassword(data: {tutorId:string, password:string}){
+    async resetPassword(data: {tutorId:string, password:string}):Promise<{message:string,success:boolean,status:number}>{
         try {
             const {tutorId,password} = data;
-            const response = await repository.passwordChange(tutorId, password);
+            const response = await this.tutorRepository.passwordChange(tutorId, password);
             return response
         } catch (error) {
             return {message:'error occured in service while changing password', success:false, status: StatusCode.NotModified}
         }
     }
 
-    async sendEmailOtp (data: {email:string}){
+    async sendEmailOtp (data: {email:string}):Promise<{message:string,success:boolean, status:number, email?:string,otpId?: ObjectId ,tutorId?:string}>{
         try {
             const email = data.email; 
-            const emailExists = await repository.findByEmail(email);
+            const emailExists = await this.tutorRepository.findByEmail(email);
             if(!emailExists){
                 console.log("email not found triggered")
                 return {success: false, message: "Email not found", status:StatusCode.NotFound };
             }
-            let otp = generateOTP();
+            let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
-            await SendVerificationMail(email,otp)
+            await this.emailService.sendVerificationMail(email,otp)
             console.log('1')
-            const otpId = await repository.storeOTP(email,otp);
+            const otpId = await this.tutorRepository.storeOTP(email,otp);
             console.log('2')
             return {message: 'An OTP has send to your email address.', success:true, status: StatusCode.Found,email,otpId, tutorId:emailExists._id};
         } catch (error) {
@@ -300,11 +352,11 @@ export class TutorService implements ITutorUseCase{
 
 
 
-    async resetPasswordVerifyOTP(data: {email:string,enteredOTP:string}){
+    async resetPasswordVerifyOTP(data: {email:string,enteredOTP:string}): Promise <{success:boolean, message:string,status:number,email:string,tutorId?:string}>{
         try { 
             const {email,enteredOTP} = data;
-            const response = await repository.verifyOTP(email,enteredOTP)
-            const user = await repository.findByEmail(email);
+            const response = await this.tutorRepository.verifyOTP(email,enteredOTP)
+            const user = await this.tutorRepository.findByEmail(email);
             if(response && user){
                 return {success:true, message: 'Email has been verified successfuly.',status:StatusCode.Accepted,email,tutorId:user._id}
             }
@@ -314,18 +366,18 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async resendEmailOtp (data: {email: string,otpId:string}) {
+    async resendEmailOtp (data: {email: string,otpId:string}): Promise<{success:boolean, status:number, message:string}>{
         try {
             console.log('trig resend')
             const {email, otpId} = data;
-            let otp = generateOTP();
+            let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
  
 
-            await SendVerificationMail(email,otp) 
+            await this.emailService.sendVerificationMail(email,otp) 
 
 
-            const updateStoredOTP = await repository.updateStoredOTP(otpId,otp);
+            const updateStoredOTP = await this.tutorRepository.updateStoredOTP(otpId,otp);
             if(!updateStoredOTP){
                 return {success:false, status: StatusCode.NotFound, message:"Time expired. try again later."}
             }
@@ -366,9 +418,9 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async addRegistrationDetails(data:AddRegistrationDetailsRequest){
+    async addRegistrationDetails(data:AddRegistrationDetailsRequest):Promise<{success:boolean, message:string, tutorData?:ITutor}> {
         try {
-            const response = await repository.addRegistrationDetails(data)
+            const response = await this.tutorRepository.addRegistrationDetails(data)
             return response
         } catch (error) {
             return {success:false,message:'Error occured nthan aryila.'}
@@ -379,7 +431,7 @@ export class TutorService implements ITutorUseCase{
         try {
             const tutorId = data.tutorId;
             console.log('fetch tutoro details from service ', tutorId)
-            const response = await repository.getTutorDetails(tutorId);
+            const response = await this.tutorRepository.getTutorDetails(tutorId);
             
             return response
         } catch (error) {
@@ -390,7 +442,7 @@ export class TutorService implements ITutorUseCase{
     async updateTutorDetails(data:{formData:ITutor}):Promise <{success:boolean, status:number, message:string}>{
         try {
             const datatoUpdate = data.formData;
-            const response = await repository.updateTutor(datatoUpdate);
+            const response = await this.tutorRepository.updateTutor(datatoUpdate);
             console.log(response);
             if(!response){
                 return {success:false, status:StatusCode.Conflict, message:"No response. Error occured while updating tutor details."}
@@ -401,13 +453,13 @@ export class TutorService implements ITutorUseCase{
         }
     }
 
-    async fetchAllStudentIds( data: {tutorId:string}){
+    async fetchAllStudentIds( data: {tutorId:string}):Promise<{success:boolean, message:string, studentIds?:string[]}>{
         try {
             const tutorId = data.tutorId;
-            const response = await repository.getAllStudentIds(tutorId);
+            const response = await this.tutorRepository.getAllStudentIds(tutorId);
             return response;
         } catch (error) {
-            return {success:false, status:StatusCode.Conflict, message:"Error occured while fetching student ids."}
+            return {success:false , message:"Error occured while fetching student ids."}
         }
     }
 } 

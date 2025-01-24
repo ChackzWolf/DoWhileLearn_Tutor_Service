@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 service TutorService {
+    rpc GoogleAuth(GoogleAuthRequest) returns (GoogleAuthResponse);
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc VerifyOTP(OTPRequest) returns (OTPResponse);
@@ -20,6 +21,24 @@ service TutorService {
     rpc UpdateTutorDetails(UpdateTutorDetailsRequest) returns(UpdateTutorDetailsResponse);
     rpc FetchTutorStudents(FetchStudentsRequest) returns(FetchStudentsResponse);
 }
+
+message GoogleAuthRequest {
+    string email = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string photoUrl = 4;
+}
+
+message GoogleAuthResponse {
+    bool success = 1; 
+    string message = 2;
+    tutorData tutorData = 3;
+    string accessToken = 4;
+    string refreshToken = 5;
+    string tutorId = 6;
+    string type = 7;
+}
+
 
 message FetchStudentsRequest {
     string tutorId  = 1;

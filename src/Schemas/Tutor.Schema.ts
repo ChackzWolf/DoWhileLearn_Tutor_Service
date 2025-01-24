@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ITutor, ITempTutor, IQualification, ICourses } from "../Interfaces/Models/ITutor";
+import { ITutor, ITempTutor, IQualification, ICourses, IOTP } from "../Interfaces/Models/ITutor";
 import { configs } from "../Configs/ENV.cofnigs/ENV.configs";
 
 
@@ -103,7 +103,7 @@ const TempTutorShcema: Schema<ITempTutor> = new Schema({
         timestamps: true,
     })
 
-const otpSchema = new Schema({
+const otpSchema: Schema<IOTP> = new Schema({
     email: { type: String, required: true, unique: true },
     otp: { type: String, required: true },
     expiresAt: { type: Date, required: true }
@@ -164,7 +164,7 @@ TutorSchema.methods.comparePassword = async function (enteredPassword: string) {
 };
 
 
-export const Otp = mongoose.model("setOTP", otpSchema)
+export const Otp = mongoose.model<IOTP>("setOTP", otpSchema)
 export const TempTutor = mongoose.model<ITempTutor>("TempTutorData", TempTutorShcema)
 const TutorModel = mongoose.model<ITutor>("Tutor", TutorSchema);
 

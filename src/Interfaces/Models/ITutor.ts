@@ -42,6 +42,14 @@ export interface ITutor extends Document {
 }
 
 
+
+
+export interface IOTP extends Document {
+    email: string;
+    otp: string;
+    expiresAt: Date;
+}
+
 export interface ITempTutor extends Document {
     tutorData: ITutor;
     otp: string;

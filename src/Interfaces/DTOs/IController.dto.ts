@@ -2,6 +2,25 @@ import { ITutor } from "../Models/ITutor";
 import { StatusCode } from "../Enums/Enums";
 
 // DTO for signup response
+
+export interface GoogleAuthResponseDTO {
+    success:boolean,
+    message:string,
+    tutorData?:ITutor,
+    accessToken?: string;
+    refreshToken?: string;
+    tutorId?: string;
+    type?:string;
+}
+
+
+export interface GoogleAuthRequestDTO {
+    firstName: string;
+    lastName: string;
+    photoUrl: string;
+    email: string;
+}
+
 export interface TutorSignupResponseDTO {
     success: boolean;
     msg: string;

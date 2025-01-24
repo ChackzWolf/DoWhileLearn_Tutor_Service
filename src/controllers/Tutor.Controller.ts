@@ -18,10 +18,14 @@ import {
             ImageRequest,
             ImageResponse,
             PDFRequest,
-            PDFResponse
+            PDFResponse,
+            GoogleAuthRequestDTO,
+            GoogleAuthResponseDTO
         } from '../Interfaces/DTOs/IController.dto'; 
 import { kafkaConfig } from "../Configs/Kafka.configs/Kafka.config";
 import { KafkaMessage } from "kafkajs";
+import ITutorService from "../Interfaces/IServices/IService.interface";
+import { kafka_Const } from "../Configs/Kafka.configs/Topic.config";
 export interface OrderEventData {
     userId: string;
     tutorId: string;
@@ -38,18 +42,23 @@ export interface OrderEventData {
   }
 
 
-const tutorService = new TutorService();
 
 export class TutorController implements ITutorController {
 
+    private tutorService : ITutorService
+
+    constructor(tutorService:ITutorService) {
+        this.tutorService = tutorService;
+    }
+
     async start(): Promise<void> {
         const topics =          [
-          'tutor.update',
-          'tutor-service.rollback'
+          kafka_Const.topics.TUTOR_UPDATE,
+          kafka_Const.topics.TUTOR_ROLLBACK
         ]
 
         await kafkaConfig.consumeMessages(
-          'tutor-service-group',
+          kafka_Const.TUTOR_SERVICE_GROUP_NAME,
           topics,
           this.routeMessage.bind(this)
         );
@@ -60,10 +69,10 @@ export class TutorController implements ITutorController {
       async routeMessage(topics:string[], message:KafkaMessage, topic:string):Promise<void>{
         try {
           switch (topic) {
-            case 'tutor.update':
+            case kafka_Const.topics.TUTOR_UPDATE:
                 await this.handleMessage(message);
                 break;
-            case 'tutor-service.rollback':
+            case kafka_Const.topics.TUTOR_ROLLBACK:
                 await this.handleRollback(message); 
                 break;
             default:
@@ -79,7 +88,7 @@ export class TutorController implements ITutorController {
         try {
             const orderDetails: OrderEventData = JSON.parse(message.value?.toString() || '');
             console.log(orderDetails, 'purchase has been triggered')
-            await tutorService.handleCoursePurchase(orderDetails);
+            await this.tutorService.handleCoursePurchase(orderDetails);
         } catch (err) {
             throw new Error("Error from controller.");
         }
@@ -89,18 +98,26 @@ export class TutorController implements ITutorController {
         try {
             const orderDetails: OrderEventData = JSON.parse(message.value?.toString() || '');
             console.log(orderDetails, 'Rollback has been triggered.')
-            await tutorService.handleOrderTransactionFail(orderDetails);
+            await this.tutorService.handleOrderTransactionFail(orderDetails);
         } catch (err) {
             throw Error;
         }
     }
- 
-
+    
+    async googleAuth(call:grpc.ServerUnaryCall<GoogleAuthRequestDTO, GoogleAuthResponseDTO>, callback: grpc.sendUnaryData<GoogleAuthResponseDTO>):Promise<void>{
+        try {
+            const data = call.request;
+            const response = await this.tutorService.googleAuthentication(data);
+            callback(null, response);
+        } catch (error) {
+            callback(error as grpc.ServiceError);
+        }
+    }
 
     async signup(call: grpc.ServerUnaryCall<TutorSignupRequestDTO, TutorSignupResponseDTO>, callback: grpc.sendUnaryData<TutorSignupResponseDTO>): Promise<void> {
         try {
             const tutorData = call.request;
-            const response = await tutorService.tutorRegister(tutorData);
+            const response = await this.tutorService.tutorRegister(tutorData);
             callback(null, { success: response.success, msg: response.message, tempId: response.tempId, email: response.email });
         } catch (err) {
             callback(err as grpc.ServiceError);
@@ -110,7 +127,7 @@ export class TutorController implements ITutorController {
     async verifyOtp(call: grpc.ServerUnaryCall<TutorVerifyOtpRequestDTO, TutorVerifyOtpResponseDTO>, callback: grpc.sendUnaryData<TutorVerifyOtpResponseDTO>): Promise<void> {
         try {
             const data = call.request;
-            const response = await tutorService.verifyOtp(data);
+            const response = await this.tutorService.verifyOtp(data);
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
@@ -120,7 +137,7 @@ export class TutorController implements ITutorController {
     async resendOtp(call: grpc.ServerUnaryCall<TutorResendOtpRequestDTO, TutorResendOtpResponseDTO>, callback: grpc.sendUnaryData<TutorResendOtpResponseDTO>): Promise<void> {
         try {
             const data = call.request;
-            const response = await tutorService.resendOTP(data);
+            const response = await this.tutorService.resendOTP(data);
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
@@ -130,7 +147,7 @@ export class TutorController implements ITutorController {
     async tutorLogin(call: grpc.ServerUnaryCall<TutorLoginRequestDTO, TutorLoginResponseDTO>, callback: grpc.sendUnaryData<TutorLoginResponseDTO>): Promise<void> {
         try { 
             const data = call.request;
-            const response = await tutorService.tutorLogin(data);
+            const response = await this.tutorService.tutorLogin(data);
             console.log(response)
             callback(null, response);
         } catch (err) {
@@ -142,7 +159,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('add course to tutor triggered !',call.request);
             const data = call.request;
-            const response = await tutorService.addCourseToTutor(data);
+            const response = await this.tutorService.addCourseToTutor(data);
             console.log(response,'response form tutor !');
             callback(null, response)
         } catch (error) {
@@ -153,7 +170,7 @@ export class TutorController implements ITutorController {
     async blockUnblock(call: grpc.ServerUnaryCall<BlockUnblockRequestDTO, BlockUnblockResponseDTO>, callback: grpc.sendUnaryData<BlockUnblockResponseDTO>): Promise<void> {
         try {
             const tutorId = call.request;
-            const response = await tutorService.blockUnblock(tutorId);
+            const response = await this.tutorService.blockUnblock(tutorId);
             callback(null, response);
         } catch (error) {
             callback(error as grpc.ServiceError);
@@ -162,7 +179,7 @@ export class TutorController implements ITutorController {
 
     async fetchTutors(_call: grpc.ServerUnaryCall<any, FetchTutorsResponseDTO>, callback: grpc.sendUnaryData<FetchTutorsResponseDTO>): Promise<void> {
         try {
-            const response = await tutorService.fetchTutors();
+            const response = await this.tutorService.fetchTutors();
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
@@ -177,7 +194,7 @@ export class TutorController implements ITutorController {
             console.log('isBlocked trig');
             const data = call.request
             console.log(data);
-            const response = await tutorService.checkIsBlocked(data);
+            const response = await this.tutorService.checkIsBlocked(data);
             console.log(response, 'response from controller')
             callback(null,{isBlocked:response.isBlocked})
         } catch (error) {
@@ -189,7 +206,7 @@ export class TutorController implements ITutorController {
         try{
             console.log('trig respassword controller')
             const data = call.request;
-            const response = await tutorService.resetPassword(data)
+            const response = await this.tutorService.resetPassword(data)
             callback(null, response)
         }catch(error){
             callback(error as grpc.ServiceError);
@@ -200,7 +217,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('trig to otp email send controller ', call.request)
             const data = call.request;
-            const response = await tutorService.sendEmailOtp(data);
+            const response = await this.tutorService.sendEmailOtp(data);
             console.log('reseponse from controller', response);
             callback(null, response);
         } catch (error) {
@@ -212,7 +229,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('trig', call.request);
             const data = call.request;
-            const response = await tutorService.resetPasswordVerifyOTP(data);
+            const response = await this.tutorService.resetPasswordVerifyOTP(data);
             console.log(response,'response from controller')
             callback(null,response);
         } catch (error) {
@@ -226,7 +243,7 @@ export class TutorController implements ITutorController {
     ): Promise<void> {
         try {
             const data = call.request;
-            const response = await tutorService.uploadImage(data);
+            const response = await this.tutorService.uploadImage(data);
             callback(null, response);
         } catch (error) {
             callback(error as grpc.ServiceError);
@@ -240,7 +257,7 @@ export class TutorController implements ITutorController {
         try {
             const data = call.request;
             console.log(data, 'data form controller');
-            const response = await tutorService.uploadPdf(data);
+            const response = await this.tutorService.uploadPdf(data);
             console.log(response, 'response form controller');
             callback(null, response);
         } catch (error) {
@@ -251,7 +268,7 @@ export class TutorController implements ITutorController {
         console.log(call.request,'data from controller');
         const data = call.request;
         try {
-            const response = await tutorService.addRegistrationDetails(data);
+            const response = await this.tutorService.addRegistrationDetails(data);
             console.log(response, 'response form controller');
             callback(null, response);
         } catch (error) {
@@ -263,7 +280,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('trig to resend otp email send controller ', call.request);
             const data = call.request;
-            const response = await tutorService.resendEmailOtp(data);
+            const response = await this.tutorService.resendEmailOtp(data);
             console.log('reseponse from controller', response);
             callback(null, response);
         } catch (error) {
@@ -275,7 +292,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('triggerd fetching tutor details.');
             const data = call.request;
-            const response = await tutorService.fetchTutorDetails(data);
+            const response = await this.tutorService.fetchTutorDetails(data);
             console.log('response from controller', response);
             callback(null, response);
         } catch (error) {
@@ -287,7 +304,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('triggered tutor details update.', call.request)
             const data = call.request;
-            const response = await tutorService.updateTutorDetails(data);
+            const response = await this.tutorService.updateTutorDetails(data);
             console.log(response, "response from controller.");
             callback(null, response);
         } catch (error) {
@@ -299,7 +316,7 @@ export class TutorController implements ITutorController {
         try {
             console.log('triggerd fetch studentsIds ' , call.request);
             const data = call.request;
-            const response = await tutorService.fetchAllStudentIds(data);
+            const response = await this.tutorService.fetchAllStudentIds(data);
             console.log(response, ' student ids');
             callback(null, response);
         } catch (error) {

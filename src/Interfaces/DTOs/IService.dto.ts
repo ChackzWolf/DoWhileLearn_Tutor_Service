@@ -3,6 +3,16 @@ import { ITutor } from "../Models/ITutor";
 
 /////////////////_________RESPONSE DTOs_________/////////////////
 
+export interface GoogleAuthResponseDTO {
+    success:boolean,
+    message:string,
+    tutorData?:ITutor,
+    accessToken?: string;
+    refreshToken?: string;
+    tutorId?: string;
+    type?:string;
+}
+
 // DTO for tutor registration response
 export interface TutorSignupResponseDTO {
     success: boolean;
@@ -57,6 +67,13 @@ export interface AddStudentResponseDTO {
 }
 
 /////////////////_________REQUESTS DTOs_________/////////////////
+
+export interface GoogleAuthRequestDTO {
+    firstName: string;
+    lastName: string;
+    photoUrl: string;
+    email: string;
+}
 
 // DTO for creating a tutor
 export interface TutorSignupRequestDTO {
