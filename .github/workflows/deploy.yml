@@ -20,8 +20,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Debug Build Context
-        run: ls -la src && ls -la src/Utils || echo "Utils folder missing"
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
