@@ -372,11 +372,7 @@ export class TutorService implements ITutorService{
             const {email, otpId} = data;
             let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
- 
-
             await this.emailService.sendVerificationMail(email,otp) 
-
-
             const updateStoredOTP = await this.tutorRepository.updateStoredOTP(otpId,otp);
             if(!updateStoredOTP){
                 return {success:false, status: StatusCode.NotFound, message:"Time expired. try again later."}
@@ -384,7 +380,7 @@ export class TutorService implements ITutorService{
             return {success:true,status : StatusCode.Accepted, message : "OTP has resend"};
         } catch (error) {
             console.log(error, "error")
-            return {success:false, status: StatusCode.Conflict, message: "Error occured while resending OTP."};
+            return {success:false, status: StatusCode.Conflict, message: "Error occured while resending OTPddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd."};
         }
     }
 

@@ -255,6 +255,7 @@ class TutorRepository extends BaseRepository<ITutor> implements ITutorRepository
     }
 
     async verifyOTP(email: string, otp: string): Promise<boolean> {
+        // set otp is timeout if email expired
         const otpEntry = await Otp.findOne({ email, otp, expiresAt: { $gt: new Date() } });
         return otpEntry !== null;
     }
