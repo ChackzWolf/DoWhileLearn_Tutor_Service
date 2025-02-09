@@ -14,6 +14,7 @@ RUN npm install --ignore-scripts
 # Copy source code and Proto files
 COPY src ./src
 COPY src/protos ./src/protos
+COPY src/Utils ./src/Utils
 
 # Run the TypeScript compilation
 RUN npm run build
