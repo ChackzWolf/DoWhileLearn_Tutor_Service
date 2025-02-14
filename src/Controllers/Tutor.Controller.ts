@@ -281,7 +281,7 @@ export class TutorController implements ITutorController {
             console.log('trig to resend otp email send controller ', call.request);
             const data = call.request;
             const response = await this.tutorService.resendEmailOtp(data);
-            console.log('reseponse from controller', response);
+            console.log('resend otp reseponse from controller', response);
             callback(null, response);
         } catch (error) {
             callback(error as grpc.ServiceError); 
