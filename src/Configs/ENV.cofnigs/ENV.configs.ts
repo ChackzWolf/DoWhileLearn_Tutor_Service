@@ -11,7 +11,7 @@ export const configs = {
 
     // DWL EMAIL CONFIGS
     DWL_EMAIL : process.env.EMAIL || 'dowhilelearn05@gmail.com',
-    DWL_PASSWORD : process.env.PASSWORD || '',
+    EMAIL_PASSWORD : process.env.EMAIL_PASSWORD || '',
 
 
     // DB COFNIGS
