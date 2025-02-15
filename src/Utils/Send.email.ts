@@ -8,6 +8,8 @@ export class EmailService implements IEmailService {
 
             console.log('Sender email : ',configs.DWL_EMAIL)
             console.log('Receiver email : ',email)
+            console.log('Sender password : ',configs.DWL_PASSWORD);
+            
             const transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
