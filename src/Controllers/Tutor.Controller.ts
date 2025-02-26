@@ -128,6 +128,7 @@ export class TutorController implements ITutorController {
         try {
             const data = call.request;
             const response = await this.tutorService.verifyOtp(data);
+            console.log(response, 'otp entry response')
             callback(null, response);
         } catch (err) {
             callback(err as grpc.ServiceError);
