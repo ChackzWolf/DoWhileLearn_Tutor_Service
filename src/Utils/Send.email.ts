@@ -27,6 +27,7 @@ export class EmailService implements IEmailService {
             };
 
             await transporter.sendMail(mailOptions);
+            return;
         } catch (error) {
             throw new Error(`Failed to send verification email: ${error}`);
         }

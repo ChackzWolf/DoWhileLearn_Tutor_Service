@@ -142,7 +142,7 @@ export class TutorService implements ITutorService{
             const tempTutor: ITempTutor | null = await TempTutor.findById(passedData.tempId);
             
             if (!tempTutor) {
-                return { success: false, message: "Temp tutor not found." };
+                return { success: false, message: "Session has expired." };
             }
     
             if (tempTutor.otp !== passedData.enteredOTP) {
