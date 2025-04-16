@@ -14,10 +14,11 @@ export class EmailService implements IEmailService {
                 service: 'gmail',
                 auth: {
                     user: configs.DWL_EMAIL,
-                    pass: configs.EMAIL_PASSWORD
+                    pass: configs.EMAIL_PASSWORD,
                 },
                 logger: true,
                 debug: true,
+                connectionTimeout: 10000, // 10 seconds
             });
             console.log('mail');
 
