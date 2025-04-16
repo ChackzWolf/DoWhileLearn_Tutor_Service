@@ -16,9 +16,12 @@ export class EmailService implements IEmailService {
                     user: configs.DWL_EMAIL,
                     pass: configs.EMAIL_PASSWORD,
                 },
+                host: 'smtp.gmail.com',
+                port: 465,  // Change port here
+                secure: true, // Use SSL
+                connectionTimeout: 10000, // 10 seconds timeout
                 logger: true,
                 debug: true,
-                connectionTimeout: 10000, // 10 seconds
             });
 
             await transporter.verify();
@@ -34,7 +37,7 @@ export class EmailService implements IEmailService {
             };
 
             await transporter.sendMail(mailOptions);
-            
+
         } catch (error) {
             throw new Error(`Failed to send verification email: ${(error as Error).message}`);
         }
