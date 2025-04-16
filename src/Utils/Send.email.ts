@@ -20,6 +20,10 @@ export class EmailService implements IEmailService {
                 debug: true,
                 connectionTimeout: 10000, // 10 seconds
             });
+
+            await transporter.verify();
+            console.log("SMTP server is ready");
+
             console.log('mail');
 
             const mailOptions = {
