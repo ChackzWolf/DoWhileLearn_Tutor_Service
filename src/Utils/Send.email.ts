@@ -12,16 +12,20 @@ export class EmailService implements IEmailService {
 
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
-                port: 465,
-                secure: true, // SSL
+                port: 587,
+                secure: false,
                 auth: {
                   user: configs.DWL_EMAIL,
-                  pass: configs.EMAIL_PASSWORD, // your 16-digit app password
+                  pass: configs.EMAIL_PASSWORD,
                 },
-                connectionTimeout: 10000,
+                tls: {
+                  rejectUnauthorized: false
+                },
                 logger: true,
                 debug: true,
+                connectionTimeout: 10000
               });
+              
 
             await transporter.verify().then(() => console.log('Server ready')).catch(console.error);
             console.log("SMTP server is ready");
