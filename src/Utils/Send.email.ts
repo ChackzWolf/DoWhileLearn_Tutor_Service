@@ -16,20 +16,22 @@ export class EmailService implements IEmailService {
                     user: configs.DWL_EMAIL,
                     pass: configs.EMAIL_PASSWORD
                 },
+                logger: true,
+                debug: true,
             });
             console.log('mail');
 
             const mailOptions = {
-                from: 'DoWhileLearn <dowhilelearn@gmail.com>',
+                from: `DoWhileLearn <${configs.DWL_EMAIL}>`,
                 to: email,
                 subject: 'Email Verification',
-                html: `<p> Hello tutor. Please enter the code:${otp}  to verify your email address.</p>`
+                html: `<p>Hello Tutor,</p><p>Please use the code <strong>${otp}</strong> to verify your email address.</p>`
             };
 
             await transporter.sendMail(mailOptions);
             return;
         } catch (error) {
-            throw new Error(`Failed to send verification email: ${error}`);
+            throw new Error(`Failed to send verification email: ${(error as Error).message}`);
         }
     };
 }
