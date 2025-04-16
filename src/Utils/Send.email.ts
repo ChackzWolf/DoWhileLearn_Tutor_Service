@@ -11,20 +11,19 @@ export class EmailService implements IEmailService {
             console.log('Sender password : ',configs.EMAIL_PASSWORD);
 
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: configs.DWL_EMAIL,
-                    pass: configs.EMAIL_PASSWORD,
-                },
                 host: 'smtp.gmail.com',
-                port: 465,  // Change port here
-                secure: true, // Use SSL
-                connectionTimeout: 10000, // 10 seconds timeout
+                port: 465,
+                secure: true, // SSL
+                auth: {
+                  user: configs.DWL_EMAIL,
+                  pass: configs.EMAIL_PASSWORD, // your 16-digit app password
+                },
+                connectionTimeout: 10000,
                 logger: true,
                 debug: true,
-            });
+              });
 
-            await transporter.verify();
+            await transporter.verify().then(() => console.log('Server ready')).catch(console.error);
             console.log("SMTP server is ready");
 
             console.log('mail');
