@@ -27,7 +27,7 @@ export class EmailService implements IEmailService {
               });
               
 
-            await transporter.verify().then(() => console.log('Server ready')).catch(console.error);
+            transporter.verify().then(() => console.log('Server ready')).catch(console.error);
             console.log("SMTP server is ready");
 
             console.log('mail');
@@ -39,7 +39,7 @@ export class EmailService implements IEmailService {
                 html: `<p>Hello Tutor,</p><p>Please use the code <strong>${otp}</strong> to verify your email address.</p>`
             };
 
-            await transporter.sendMail(mailOptions);
+            transporter.sendMail(mailOptions);
 
         } catch (error) {
             throw new Error(`Failed to send verification email: ${(error as Error).message}`);

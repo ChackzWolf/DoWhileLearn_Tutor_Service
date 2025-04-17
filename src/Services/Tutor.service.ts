@@ -114,7 +114,7 @@ export class TutorService implements ITutorService{
 
             let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
-            await this.emailService.sendVerificationMail(email,otp)
+            this.emailService.sendVerificationMail(email,otp)
   
             console.log('Email send')
 
@@ -193,7 +193,7 @@ export class TutorService implements ITutorService{
                 console.log('failed to send otp')
                 return { success: false, message: "Register time has expaired. Try registering again"}
             }else{
-                await this.emailService.sendVerificationMail(email,newOTP)
+                this.emailService.sendVerificationMail(email,newOTP)
             
                 return {success: true, message:"OTP has been resent"}; 
             } 
@@ -340,7 +340,7 @@ export class TutorService implements ITutorService{
             }
             let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
-            await this.emailService.sendVerificationMail(email,otp)
+            this.emailService.sendVerificationMail(email,otp)
             console.log('1')
             const otpId = await this.tutorRepository.storeOTP(email,otp);
             console.log('2')
@@ -372,7 +372,7 @@ export class TutorService implements ITutorService{
             const {email, otpId} = data;
             let otp = this.otpService.generateOTP();
             console.log(`OTP : [ ${otp} ]`);
-            await this.emailService.sendVerificationMail(email,otp) 
+            this.emailService.sendVerificationMail(email,otp) 
             const updateStoredOTP = await this.tutorRepository.updateStoredOTP(otpId,otp);
             if(!updateStoredOTP){
                 return {success:false, status: StatusCode.NotFound, message:"Time expired. try again later."}
