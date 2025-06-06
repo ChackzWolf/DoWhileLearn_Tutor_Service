@@ -380,7 +380,7 @@ export class TutorService implements ITutorService{
             return {success:true,status : StatusCode.Accepted, message : "OTP has resend"};
         } catch (error) {
             console.log(error, "error")
-            return {success:false, status: StatusCode.Conflict, message: "Error occured while resending OTPddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd."};
+            return {success:false, status: StatusCode.Conflict, message: "Error occured while resending OTP."};
         }
     }
 
